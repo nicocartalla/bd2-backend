@@ -1,0 +1,17 @@
+# Use the official MySQL image from the Docker Hub
+FROM mysql:latest
+
+# Set the environment variables for MySQL
+ENV MYSQL_ROOT_PASSWORD=toor
+ENV MYSQL_DATABASE=penca_ucu
+ENV MYSQL_USER=usr_penca
+ENV MYSQL_PASSWORD=12345678
+
+# Expose the default MySQL port
+EXPOSE 3306
+
+# Add a custom SQL script to initialize the database
+#COPY ./penca.sql /docker-entrypoint-initdb.d/
+
+# Command to run MySQL server
+CMD ["mysqld"]

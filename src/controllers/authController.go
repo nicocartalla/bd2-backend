@@ -4,9 +4,10 @@ import (
 	"bd2-backend/src/config"
 	"bd2-backend/src/models"
 	"bd2-backend/src/responses"
+	"bd2-backend/src/services"
+	"bd2-backend/src/utils"
 	"encoding/json"
 	"github.com/golang-jwt/jwt/v4"
-	"log"
 	"net/http"
 	"time"
 )
@@ -18,7 +19,7 @@ var jwtToken []byte
 func init() {
 	cfg, err := config.LoadConfig("./")
 	if err != nil {
-		log.Fatal("cannot load config:", err)
+		utils.ErrorLogger.Fatal("cannot load config:", err)
 	}
 	jwtToken = []byte(cfg.JwtKey)
 
@@ -28,6 +29,7 @@ func init() {
 func CreateToken(w http.ResponseWriter, r *http.Request) {
 
 	var user models.User
+	var userService services.UserService
 	// Get the JSON body and decode into credentials
 	_ = json.NewDecoder(r.Body).Decode(&user)
 
@@ -38,11 +40,11 @@ func CreateToken(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	okLogin, errLogin := user.ValidateLogin()
+	okLogin, errLogin := userService.ValidateLogin()
 	if errLogin != nil {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusUnauthorized)
-		ErrorLogger.Println(errLogin.Error())
+		utils.ErrorLogger.Println(errLogin.Error())
 		err := json.NewEncoder(w).Encode(responses.Exception{Message: "Error validando el usuario"})
 		if err != nil {
 			return
@@ -60,7 +62,7 @@ func CreateToken(w http.ResponseWriter, r *http.Request) {
 		})
 		tokenString, error := token.SignedString(jwtToken)
 		if error != nil {
-			ErrorLogger.Println(error.Error())
+			utils.ErrorLogger.Println(error.Error())
 
 		}
 

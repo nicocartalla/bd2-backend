@@ -1,33 +1,38 @@
 package controllers
 
 import (
+	"bd2-backend/src/utils"
 	"bd2-backend/src/models"
 	"bd2-backend/src/responses"
+	"bd2-backend/src/services"
 	"encoding/json"
 	"net/http"
 )
 
-type CreateUserResponse struct {
-	ID     int    `json:"id"`
-	Status string `json:"status"`
-}
+type CreateUserResponse models.CreateUserResponse
+
+var (
+	userService = &services.UserService{}
+)
 
 func CreateUser(w http.ResponseWriter, r *http.Request) {
 	user := models.User{}
+	var userService = &services.UserService{}
 	err := json.NewDecoder(r.Body).Decode(&user)
 	if err != nil {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
-		ErrorLogger.Println(err)
+		utils.ErrorLogger.Println(err)
 		json.NewEncoder(w).Encode(responses.Exception{Message: "Error al decodificar el usuario"})
 		return
 	}
 
-	id, errCreate := user.CreateUser()
+//	id, errCreate := user.CreateUser()
+	id, errCreate := userService.CreateUser(user)
 	if errCreate != nil {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusInternalServerError)
-		ErrorLogger.Println(errCreate)
+		utils.ErrorLogger.Println(errCreate)
 		json.NewEncoder(w).Encode(responses.Exception{Message: "Error al crear el usuario"})
 		return
 	}
@@ -35,7 +40,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 	if id == 0 {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
-		ErrorLogger.Println(errCreate)
+		utils.ErrorLogger.Println(errCreate)
 		json.NewEncoder(w).Encode(responses.Exception{Message: "Error al crear el usuario"})
 		return
 	}

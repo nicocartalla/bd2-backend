@@ -1,29 +1,24 @@
 package database
 
 import (
+	"bd2-backend/src/utils"
 	"bd2-backend/src/config"
 	"database/sql"
 	_ "github.com/go-sql-driver/mysql"
-	"log"
+	
 )
 
 var (
-	WarningLogger *log.Logger
-	InfoLogger    *log.Logger
-	ErrorLogger   *log.Logger
 	dbUri         string
 )
 
 func init() {
 	config, err := config.LoadConfig("./")
 	if err != nil {
-		log.Fatal("cannot load config:", err)
+		utils.ErrorLogger.Fatal("cannot load config:", err)
 	}
 	dbUri = config.DBUri
 
-	InfoLogger = log.New(log.Writer(), "INFO: ", log.Ldate|log.Ltime|log.Lshortfile)
-	WarningLogger = log.New(log.Writer(), "WARNING: ", log.Ldate|log.Ltime|log.Lshortfile)
-	ErrorLogger = log.New(log.Writer(), "ERROR: ", log.Ldate|log.Ltime|log.Lshortfile)
 }
 
 func dBInit() *sql.DB {

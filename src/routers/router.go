@@ -1,24 +1,13 @@
 package routers
 
 import (
+	"bd2-backend/src/utils"
 	"bd2-backend/src/responses"
 	"encoding/json"
 	"github.com/gorilla/mux"
-	"log"
 	"net/http"
 )
 
-var (
-	WarningLogger *log.Logger
-	InfoLogger    *log.Logger
-	ErrorLogger   *log.Logger
-)
-
-func init() {
-	InfoLogger = log.New(log.Writer(), "INFO: ", log.Ldate|log.Ltime|log.Lshortfile)
-	WarningLogger = log.New(log.Writer(), "WARNING: ", log.Ldate|log.Ltime|log.Lshortfile)
-	ErrorLogger = log.New(log.Writer(), "ERROR: ", log.Ldate|log.Ltime|log.Lshortfile)
-}
 
 func Routers() *mux.Router {
 	r := mux.NewRouter().StrictSlash(true)
@@ -29,16 +18,22 @@ func Routers() *mux.Router {
 	ping := v1.PathPrefix("/ping").Subrouter()
 	auth := v1.PathPrefix("/authenticate").Subrouter()
 	signup := v1.PathPrefix("/signup").Subrouter()
+	team := v1.PathPrefix("/team").Subrouter()
+	result := v1.PathPrefix("/result").Subrouter()
 	r.NotFoundHandler = http.HandlerFunc(NotFound)
 	r.MethodNotAllowedHandler = http.HandlerFunc(MethodNotAllowed)
-	InfoLogger.Println("CORS enabled")
+	utils.InfoLogger.Println("CORS enabled")
 
 	PingRouter(ping)
-	InfoLogger.Println("Ping router enabled at /api/v1/ping")
+	utils.InfoLogger.Println("Ping router enabled at /api/v1/ping")
 	AuthRouter(auth)
-	InfoLogger.Println("Auth router enabled at /api/v1/authenticate")
+	utils.InfoLogger.Println("Auth router enabled at /api/v1/authenticate")
 	SignUpRouter(signup)
-	InfoLogger.Println("User router enabled at /api/v1/signup")
+	utils.InfoLogger.Println("User router enabled at /api/v1/signup")
+	TeamRouter(team)
+	utils.InfoLogger.Println("User router enabled at /api/v1/team")
+	ResultsRouter(result)
+	utils.InfoLogger.Println("User router enabled at /api/v1/result")
 	
 	return r
 }

@@ -5,22 +5,10 @@ import (
 	"fmt"
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/mitchellh/mapstructure"
-	"log"
 	"net/http"
 	"strings"
 )
 
-var (
-	WarningLogger *log.Logger
-	InfoLogger    *log.Logger
-	ErrorLogger   *log.Logger
-)
-
-func init() {
-	InfoLogger = log.New(log.Writer(), "INFO: ", log.Ldate|log.Ltime|log.Lshortfile)
-	WarningLogger = log.New(log.Writer(), "WARNING: ", log.Ldate|log.Ltime|log.Lshortfile)
-	ErrorLogger = log.New(log.Writer(), "ERROR: ", log.Ldate|log.Ltime|log.Lshortfile)
-}
 
 func validateToken(r *http.Request) (models.User, error) {
 	//obtener el token desde el header Authorization

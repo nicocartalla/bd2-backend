@@ -39,21 +39,15 @@ CREATE TABLE Teams (
 
 CREATE TABLE GameMatch (
     match_id INT PRIMARY KEY,
-    date DATE NOT NULL,
+    match_date DATETIME NOT NULL,
     team_local_id INT,
     team_visitor_id INT,
+    goals_local INT,
+    goals_visitor INT,
     championship_id INT,
     FOREIGN KEY (team_local_id) REFERENCES Teams(team_id),
     FOREIGN KEY (team_visitor_id) REFERENCES Teams(team_id),
     FOREIGN KEY (championship_id) REFERENCES Championships(championship_id)
-);
-
-CREATE TABLE Results (
-    result_id INT PRIMARY KEY,
-    match_id INT,
-    goals_local INT NOT NULL,
-    goals_visitor INT NOT NULL,
-    FOREIGN KEY (match_id) REFERENCES GameMatch(match_id)
 );
 
 CREATE TABLE Predictions (
@@ -83,7 +77,7 @@ CREATE TABLE Teams_Championships (
     PRIMARY KEY (team_id, championship_id),
     FOREIGN KEY (team_id) REFERENCES Teams(team_id),
     FOREIGN KEY (championship_id) REFERENCES Championships(championship_id)
-);
+);SET FOREIGN_KEY_CHECKS = 0;
 
 -- Usuarios
 INSERT INTO User (user_id, email, last_name, first_name, major, password, role) VALUES
@@ -121,18 +115,11 @@ INSERT INTO Teams (team_id, name) VALUES
 (8, 'Arsenal');
 
 -- Partidos
-INSERT INTO GameMatch (match_id, date, team_local_id, team_visitor_id, championship_id) VALUES
-(1, '2024-06-01', 1, 2, 1), -- Nacional vs Peñarol en el Campeonato Uruguayo
-(2, '2024-06-02', 3, 4, 1), -- Defensor Sporting vs Danubio en el Campeonato Uruguayo
-(3, '2024-06-03', 5, 6, 2), -- Manchester United vs Liverpool en la Premier League
-(4, '2024-06-04', 7, 8, 2); -- Chelsea vs Arsenal en la Premier League
-
--- Resultados
-INSERT INTO Results (result_id, match_id, goals_local, goals_visitor) VALUES
-(1, 1, 2, 1), -- Nacional 2 vs Peñarol 1
-(2, 2, 0, 0), -- Defensor Sporting 0 vs Danubio 0
-(3, 3, 1, 1), -- Manchester United 1 vs Liverpool 1
-(4, 4, 2, 3); -- Chelsea 2 vs Arsenal 3
+INSERT INTO GameMatch (match_id, match_date, team_local_id, team_visitor_id, goals_local, goals_visitor, championship_id) VALUES
+(1, '2024-06-01 15:00:00', 1, 2, 2, 1, 1), -- Nacional 2 vs Peñarol 1 en el Campeonato Uruguayo
+(2, '2024-06-02 18:00:00', 3, 4, 0, 0, 1), -- Defensor Sporting 0 vs Danubio 0 en el Campeonato Uruguayo
+(3, '2024-06-03 16:00:00', 5, 6, 1, 1, 2), -- Manchester United 1 vs Liverpool 1 en la Premier League
+(4, '2024-06-04 20:00:00', 7, 8, 2, 3, 2); -- Chelsea 2 vs Arsenal 3 en la Premier League
 
 -- Predicciones
 INSERT INTO Predictions (prediction_id, goals_local, goals_visitor, user_id, match_id, group_id) VALUES

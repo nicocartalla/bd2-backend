@@ -11,7 +11,7 @@ type TeamService struct {
     Team models.Team
 }
 
-func (t *TeamService) CheckTeamExists(teamName string) bool {
+func (t *TeamService) CheckTeamExistsByName(teamName string) bool {
 	query := fmt.Sprintf("SELECT name as nameDB FROM Team WHERE name = '%s'", teamName)
 	rows, err := database.QueryDB(query)
 	if err != nil {
@@ -29,6 +29,18 @@ func (t *TeamService) CheckTeamExists(teamName string) bool {
 		}
 	}
 	return teamName == nameDB
+}
+
+//Validate Team - Check if team exists
+func (r *TeamService) CheckTeamExistsByID(teamID int) (bool, error) {
+    query := ("SELECT team_id FROM Team WHERE team_id = ?")
+    rows, err := database.QueryRowDB(query, teamID)
+    if err != nil || rows.Err() != nil{
+        utils.ErrorLogger.Println("Error checking if team exists: ", err)
+        return false, fmt.Errorf("error checking if team exists: %v", err)
+    }
+    var teamIDDB int
+    return teamID == teamIDDB, nil
 }
 
 func (t *TeamService) GetTeams() ([]models.Team, error) {

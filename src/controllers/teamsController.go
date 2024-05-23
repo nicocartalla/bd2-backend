@@ -37,7 +37,7 @@ func GetTeams(w http.ResponseWriter, r *http.Request) {
 func CheckTeamExists(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	teamName := vars["name"]
-	exists := teamService.CheckTeamExists(teamName)
+	exists := teamService.CheckTeamExistsByName(teamName)
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)

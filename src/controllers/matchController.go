@@ -39,13 +39,13 @@ func validateQueryParams(queryParams map[string]string) (time.Time, int, int, in
 
 func validateEntities(championshipID, teamLocalID, teamVisitorID int) error {
 	if ok, err := matchService.ValidateChampionship(championshipID); err != nil || !ok {
-		return fmt.Errorf("invalid championship_id: %v", err)
+		return fmt.Errorf("invalid championship_id %d: %v", championshipID, err)
 	}
 	if ok, err := teamService.CheckTeamExistsByID(teamLocalID); err != nil || !ok {
-		return fmt.Errorf("invalid team_local_id: %v", err)
+		return fmt.Errorf("invalid team_local_id %d: %v", teamLocalID, err)
 	}
 	if ok, err := teamService.CheckTeamExistsByID(teamVisitorID); err != nil || !ok {
-		return fmt.Errorf("invalid team_visitor_id: %v", err)
+		return fmt.Errorf("invalid team_visitor_id %d: %v", teamVisitorID, err)
 	}
 	return nil
 }
@@ -138,7 +138,7 @@ func UpdateMatch(w http.ResponseWriter, r *http.Request) {
 	goalsVisitor, errGoalsVisitor := strconv.Atoi(queryParams["goals_visitor"])
 
 	matchDate, teamLocalID, teamVisitorID, championshipID, err := validateQueryParams(queryParams)
-	if err != nil || errMatchID != nil || errGoalsLocal != nil || errGoalsVisitor != nil {
+	if err != nil || errMatchID != nil {
 		respondWithError(w, http.StatusBadRequest, "Invalid query parameters", fmt.Errorf("%v %v %v %v", err, errMatchID, errGoalsLocal, errGoalsVisitor))
 		return
 	}

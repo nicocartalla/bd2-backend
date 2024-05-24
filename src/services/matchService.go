@@ -27,7 +27,6 @@ func (r *MatchService) ValidateChampionship(championshipID int) (bool, error) {
     return championshipID == championshipIDDB, nil
 }
 
-//Validate Match - Check if match exists
 func (r *MatchService) ValidateMatch(matchID int) (bool, error) {
     var matchIDDB int
     query := ("SELECT match_id FROM GameMatch WHERE match_id = ?")
@@ -43,7 +42,6 @@ func (r *MatchService) ValidateMatch(matchID int) (bool, error) {
 }
 
 func (r *MatchService) GetAllMatchResults() ([]models.Match, error) {
-   // var matchTime time.Time
     query := "SELECT * FROM GameMatch WHERE goals_local IS NOT NULL AND goals_visitor IS NOT NULL"
     rows, err := database.QueryDB(query)
     if err != nil {
@@ -127,10 +125,7 @@ func (r *MatchService) InsertResult(match models.Match) (int64, error) {
     return id, nil
 }
 
-/* Get Matches that has not been played yet, in order from the nearest match to the farthest, 
-   get only the match that the date is greater than the current date plus the hours until the match
-   this data(the hours until match) is obtained from the database in the table Utils from the atributte hours_until_match
-*/
+
 func (r *MatchService) GetMatchesNotPlayedYet() ([]models.Match, error) {
     query := "SELECT * FROM GameMatch WHERE match_date > NOW() + INTERVAL (SELECT hours_until_match FROM Utils) HOUR"
     rows, err := database.QueryDB(query)

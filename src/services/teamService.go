@@ -31,7 +31,6 @@ func (t *TeamService) CheckTeamExistsByName(teamName string) bool {
 	return teamName == nameDB
 }
 
-//Validate Team - Check if team exists
 func (r *TeamService) CheckTeamExistsByID(teamID int) (bool, error) {
 	var teamIDDB int
     query := ("SELECT team_id FROM Teams WHERE team_id = ?")

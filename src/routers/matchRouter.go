@@ -64,7 +64,6 @@ func GetMatchesNotPlayedYet(r *mux.Router) *mux.Router {
 	return a
 }
 
-// Función para configurar las rutas del equipo
 func MatchRouter(r *mux.Router) {
 	getAllMatchResults(r)
 	getResultsMatch(r)

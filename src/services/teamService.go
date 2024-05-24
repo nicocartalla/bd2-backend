@@ -33,13 +33,14 @@ func (t *TeamService) CheckTeamExistsByName(teamName string) bool {
 
 //Validate Team - Check if team exists
 func (r *TeamService) CheckTeamExistsByID(teamID int) (bool, error) {
-    query := ("SELECT team_id FROM Team WHERE team_id = ?")
-    rows, err := database.QueryRowDB(query, teamID)
-    if err != nil || rows.Err() != nil{
-        utils.ErrorLogger.Println("Error checking if team exists: ", err)
-        return false, fmt.Errorf("error checking if team exists: %v", err)
-    }
-    var teamIDDB int
+	var teamIDDB int
+    query := ("SELECT team_id FROM Teams WHERE team_id = ?")
+    row, err := database.QueryRowDB(query, teamID)
+	row.Scan(&teamIDDB)
+	if err != nil {
+		utils.ErrorLogger.Println("Error checking if team exists: ", err)
+		return false, fmt.Errorf("error checking if team exists: %v", err)
+	}
     return teamID == teamIDDB, nil
 }
 

@@ -10,7 +10,7 @@ CREATE TABLE User (
 );
 
 CREATE TABLE Championships (
-    championship_id INT PRIMARY KEY,
+    championship_id INT PRIMARY KEY AUTO_INCREMENT,
     name VARCHAR(255) NOT NULL,
     year INT NOT NULL,
     country VARCHAR(255) NOT NULL,
@@ -18,14 +18,14 @@ CREATE TABLE Championships (
 );
 
 CREATE TABLE UserGroups (
-    group_id INT PRIMARY KEY,
+    group_id INT PRIMARY KEY AUTO_INCREMENT,
     name VARCHAR(255) NOT NULL,
     championship_id INT,
     FOREIGN KEY (championship_id) REFERENCES Championships(championship_id)
 );
 
 CREATE TABLE User_UserGroups (
-    user_id INT,
+    user_id INT ,
     group_id INT,
     PRIMARY KEY (user_id, group_id),
     FOREIGN KEY (user_id) REFERENCES User(user_id),
@@ -38,7 +38,7 @@ CREATE TABLE Teams (
 );
 
 CREATE TABLE GameMatch (
-    match_id INT PRIMARY KEY,
+    match_id INT PRIMARY KEY AUTO_INCREMENT,
     match_date DATETIME NOT NULL,
     team_local_id INT,
     team_visitor_id INT,
@@ -51,7 +51,7 @@ CREATE TABLE GameMatch (
 );
 
 CREATE TABLE Predictions (
-    prediction_id INT PRIMARY KEY,
+    prediction_id INT PRIMARY KEY AUTO_INCREMENT,
     goals_local INT NOT NULL,
     goals_visitor INT NOT NULL,
     user_id INT,
@@ -63,7 +63,7 @@ CREATE TABLE Predictions (
 );
 
 CREATE TABLE Scores (
-    score_id INT PRIMARY KEY,
+    score_id INT PRIMARY KEY AUTO_INCREMENT,
     user_id INT,
     match_id INT,
     points INT NOT NULL,
@@ -77,7 +77,14 @@ CREATE TABLE Teams_Championships (
     PRIMARY KEY (team_id, championship_id),
     FOREIGN KEY (team_id) REFERENCES Teams(team_id),
     FOREIGN KEY (championship_id) REFERENCES Championships(championship_id)
-);SET FOREIGN_KEY_CHECKS = 0;
+)
+
+CREATE TABLE Utils (
+    hours_until_match INT
+);
+
+-- UTILS
+INSERT INTO Utils (hours_until_match) VALUES (1);
 
 -- Usuarios
 INSERT INTO User (user_id, email, last_name, first_name, major, password, role) VALUES

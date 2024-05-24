@@ -14,20 +14,37 @@ type MatchService struct {
 
 //Validate Championship - Check if championship exists MOVER A CHAMPIONSHIP SERVICE CUANDO SE CREE
 func (r *MatchService) ValidateChampionship(championshipID int) (bool, error) {
-    query := ("SELECT championship_id FROM Championship WHERE championship_id = %d")
-    rows, err := database.QueryRowDB(query, championshipID)
-    if err != nil || rows.Err() != nil{
-        utils.ErrorLogger.Println("Error checking if championship exists: ", err)
-        return false, fmt.Errorf("error checking if championship exists: %v", err)
-    }
     var championshipIDDB int
+    query := ("SELECT championship_id FROM Championships WHERE championship_id = ?")
+    row, err := database.QueryRowDB(query, championshipID)
+    row.Scan(&championshipIDDB)
+    if err == sql.ErrNoRows {
+        return false, fmt.Errorf("championship with championship_id: %d does not exist", championshipID)
+    } else if err != nil {
+        utils.ErrorLogger.Println("Error scanning championship: ", err)
+        return false, fmt.Errorf("error scanning championship: %v", err)
+    }
     return championshipID == championshipIDDB, nil
 }
 
+//Validate Match - Check if match exists
+func (r *MatchService) ValidateMatch(matchID int) (bool, error) {
+    var matchIDDB int
+    query := ("SELECT match_id FROM GameMatch WHERE match_id = ?")
+    row, err := database.QueryRowDB(query, matchID)
+    row.Scan(&matchIDDB)
+    if err == sql.ErrNoRows {
+        return false, fmt.Errorf("match with match_id: %d does not exist", matchID)
+    } else if err != nil {
+        utils.ErrorLogger.Println("Error scanning match: ", err)
+        return false, fmt.Errorf("error scanning match: %v", err)
+    }
+    return matchID == matchIDDB, nil
+}
 
-func (r *MatchService) CheckAllResults() ([]models.Match, error) {
+func (r *MatchService) GetAllMatchResults() ([]models.Match, error) {
    // var matchTime time.Time
-    query := "SELECT * FROM GameMatch"
+    query := "SELECT * FROM GameMatch WHERE goals_local IS NOT NULL AND goals_visitor IS NOT NULL"
     rows, err := database.QueryDB(query)
     if err != nil {
         utils.ErrorLogger.Println("Error getting results: ", err)
@@ -71,13 +88,13 @@ func (r *MatchService) GetMatchResult(matchID int) (models.Match, error) {
 }
 
 func (r *MatchService) InsertMatch(match models.Match) (int64, error) {
-    query := fmt.Sprintf("INSERT INTO GameMatch (match_date, team_local_id, team_visitor_id, championship_id) VALUES ('%s', %d, %d, %d)", match.MatchDate, match.TeamLocalID, match.TeamVisitorID, match.ChampionshipID)
-    id, err := database.InsertDB(query)
+    query := "INSERT INTO GameMatch (match_date, team_local_id, team_visitor_id, championship_id) VALUES ( ?, ?, ?, ? )"
+    result, err := database.InsertDBParams(query, match.MatchDate, match.TeamLocalID, match.TeamVisitorID, match.ChampionshipID)
     if err != nil {
         utils.ErrorLogger.Println("Error inserting match: ", err)
         return 0, fmt.Errorf("error inserting match: %v", err)
     }
-    return id, nil
+    return result, nil
 }
 
 func (r *MatchService) UpdateMatch(match models.Match) (int64, error) {
@@ -109,3 +126,30 @@ func (r *MatchService) InsertResult(match models.Match) (int64, error) {
     }
     return id, nil
 }
+
+/* Get Matches that has not been played yet, in order from the nearest match to the farthest, 
+   get only the match that the date is greater than the current date plus the hours until the match
+   this data(the hours until match) is obtained from the database in the table Utils from the atributte hours_until_match
+*/
+func (r *MatchService) GetMatchesNotPlayedYet() ([]models.Match, error) {
+    query := "SELECT * FROM GameMatch WHERE match_date > NOW() + INTERVAL (SELECT hours_until_match FROM Utils) HOUR"
+    rows, err := database.QueryDB(query)
+    if err != nil {
+        utils.ErrorLogger.Println("Error getting matches to play: ", err)
+        return nil, fmt.Errorf("error getting matches to play: %v", err)
+    }
+    defer rows.Close()
+
+    var matches []models.Match
+    for rows.Next() {
+        var match models.Match
+        err = rows.Scan(&match.MatchID, &match.MatchDate, &match.TeamLocalID, &match.TeamVisitorID, &match.GoalsLocal, &match.GoalsVisitor, &match.ChampionshipID)
+        if err != nil {
+            utils.ErrorLogger.Println("Error scanning match: ", err)
+            return nil, fmt.Errorf("error scanning match: %v", err)
+        }
+        matches = append(matches, match)
+    }
+    return matches, nil
+}
+

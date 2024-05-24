@@ -57,6 +57,16 @@ func InsertDB(insert string) (int64, error) {
 	return d.LastInsertId()
 }
 
+func InsertDBParams(insert string, params ...any) (int64, error) {
+	db := dBInit()
+	defer db.Close()
+	d, err := db.Exec(insert, params...)
+	if err != nil {
+		return 0, err
+	}
+	return d.LastInsertId()
+}
+
 func DeleteDB(delete string) (int64, error) {
 	db := dBInit()
 	defer db.Close()

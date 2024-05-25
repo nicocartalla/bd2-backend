@@ -19,7 +19,7 @@ func Routers() *mux.Router {
 	auth := v1.PathPrefix("/authenticate").Subrouter()
 	signup := v1.PathPrefix("/signup").Subrouter()
 	team := v1.PathPrefix("/team").Subrouter()
-	result := v1.PathPrefix("/result").Subrouter()
+	match := v1.PathPrefix("/match").Subrouter()
 	r.NotFoundHandler = http.HandlerFunc(NotFound)
 	r.MethodNotAllowedHandler = http.HandlerFunc(MethodNotAllowed)
 	utils.InfoLogger.Println("CORS enabled")
@@ -32,8 +32,8 @@ func Routers() *mux.Router {
 	utils.InfoLogger.Println("User router enabled at /api/v1/signup")
 	TeamRouter(team)
 	utils.InfoLogger.Println("User router enabled at /api/v1/team")
-	ResultsRouter(result)
-	utils.InfoLogger.Println("User router enabled at /api/v1/result")
+	MatchRouter(match)
+	utils.InfoLogger.Println("User router enabled at /api/v1/match")
 	
 	return r
 }

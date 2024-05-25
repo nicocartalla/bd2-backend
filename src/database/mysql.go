@@ -40,10 +40,27 @@ func QueryDB(query string) (*sql.Rows, error) {
 	return rows, nil
 }
 
+func QueryRowDB(query string, parameter any) (*sql.Row, error) {
+	db := dBInit()
+	defer db.Close()
+	row := db.QueryRow(query, parameter)
+	return row, nil
+}
+
 func InsertDB(insert string) (int64, error) {
 	db := dBInit()
 	defer db.Close()
 	d, err := db.Exec(insert)
+	if err != nil {
+		return 0, err
+	}
+	return d.LastInsertId()
+}
+
+func InsertDBParams(insert string, params ...any) (int64, error) {
+	db := dBInit()
+	defer db.Close()
+	d, err := db.Exec(insert, params...)
 	if err != nil {
 		return 0, err
 	}

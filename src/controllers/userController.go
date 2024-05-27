@@ -1,19 +1,16 @@
 package controllers
 
 import (
-	"bd2-backend/src/utils"
 	"bd2-backend/src/models"
 	"bd2-backend/src/responses"
 	"bd2-backend/src/services"
+	"bd2-backend/src/utils"
 	"encoding/json"
 	"net/http"
 )
 
 type CreateUserResponse models.CreateUserResponse
 
-var (
-	userService = &services.UserService{}
-)
 
 func CreateUser(w http.ResponseWriter, r *http.Request) {
 	user := models.User{}
@@ -28,7 +25,8 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 //	id, errCreate := user.CreateUser()
-	id, errCreate := userService.CreateUser(user)
+	userService.User = user
+	id, errCreate := userService.CreateUser()
 	if errCreate != nil {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusInternalServerError)

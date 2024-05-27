@@ -33,10 +33,10 @@ func CreateToken(w http.ResponseWriter, r *http.Request) {
 	// Get the JSON body and decode into credentials
 	_ = json.NewDecoder(r.Body).Decode(&user)
 
-	if user.Username == "" || user.Password == "" {
+	if user.Email == "" || user.Password == "" {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(responses.Exception{Message: "Username and password are required"})
+		json.NewEncoder(w).Encode(responses.Exception{Message: "email and password are required"})
 		return
 	}
 
@@ -45,7 +45,7 @@ func CreateToken(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusUnauthorized)
 		utils.ErrorLogger.Println(errLogin.Error())
-		err := json.NewEncoder(w).Encode(responses.Exception{Message: "Error validando el usuario"})
+		err := json.NewEncoder(w).Encode(responses.Exception{Message: "Error validating login"})
 		if err != nil {
 			return
 		}
@@ -56,8 +56,7 @@ func CreateToken(w http.ResponseWriter, r *http.Request) {
 	if okLogin {
 		expiration := time.Now().Add(time.Hour * time.Duration(1)).Unix()
 		token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-			"username": user.Username,
-			"id":       user.ID,
+			"email": 	user.Email,
 			"exp":      expiration,
 		})
 		tokenString, error := token.SignedString(jwtToken)

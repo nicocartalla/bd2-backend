@@ -47,6 +47,17 @@ func QueryRowDB(query string, parameter any) (*sql.Row, error) {
 	return row, nil
 }
 
+//many rows
+func QueryRowsDBParams(query string, params ...any) (*sql.Rows, error) {
+	db := dBInit()
+	defer db.Close()
+	rows, err := db.Query(query, params...)
+	if err != nil {
+		return nil, err
+	}
+	return rows, nil
+}
+
 func InsertDB(insert string) (int64, error) {
 	db := dBInit()
 	defer db.Close()

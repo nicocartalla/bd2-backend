@@ -127,7 +127,7 @@ func (r *MatchService) InsertResult(match models.Match) (int64, error) {
 
 
 func (r *MatchService) GetMatchesNotPlayedYet() ([]models.Match, error) {
-    query := "SELECT * FROM GameMatch WHERE match_date > NOW() + INTERVAL (SELECT hours_until_match FROM Utils) HOUR"
+    query := "SELECT * FROM GameMatch WHERE match_date > NOW() + INTERVAL (SELECT hours_until_match FROM Utils) HOUR ORDER BY match_date ASC"
     rows, err := database.QueryDB(query)
     if err != nil {
         utils.ErrorLogger.Println("Error getting matches to play: ", err)

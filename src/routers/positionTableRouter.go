@@ -14,16 +14,16 @@ func getPositionTableByChampionship(r *mux.Router) *mux.Router {
 	return a
 }
 
-func getUserScoresByGroup(r *mux.Router) *mux.Router {
+/* func getUserScoresByGroup(r *mux.Router) *mux.Router {
 	a := r.PathPrefix("").Subrouter()
 	a.Use(mux.CORSMethodMiddleware(a))
 	a.HandleFunc("/{group_id}", controllers.GetUserScoresByGroup).Methods("GET")
 	a.MethodNotAllowedHandler = http.HandlerFunc(MethodNotAllowed)
 	return a
-}
+} */
 
 
 func PositionTableRouter(r *mux.Router) {
 	getPositionTableByChampionship(r)
-	getUserScoresByGroup(r)
+	// getUserScoresByGroup(r)
 }

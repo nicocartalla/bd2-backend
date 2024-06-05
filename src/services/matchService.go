@@ -12,20 +12,6 @@ type MatchService struct {
     Match models.Match
 }
 
-//Validate Championship - Check if championship exists MOVER A CHAMPIONSHIP SERVICE CUANDO SE CREE
-func (r *MatchService) ValidateChampionship(championshipID int) (bool, error) {
-    var championshipIDDB int
-    query := ("SELECT championship_id FROM Championships WHERE championship_id = ?")
-    row, err := database.QueryRowDB(query, championshipID)
-    row.Scan(&championshipIDDB)
-    if err == sql.ErrNoRows {
-        return false, fmt.Errorf("championship with championship_id: %d does not exist", championshipID)
-    } else if err != nil {
-        utils.ErrorLogger.Println("Error scanning championship: ", err)
-        return false, fmt.Errorf("error scanning championship: %v", err)
-    }
-    return championshipID == championshipIDDB, nil
-}
 
 func (r *MatchService) ValidateMatch(matchID int) (bool, error) {
     var matchIDDB int
@@ -116,14 +102,19 @@ func (r *MatchService) DeleteMatch(matchID int) (int64, error) {
 }
 
 func (r *MatchService) InsertResult(match models.Match) (int64, error) {
-    query := fmt.Sprintf("INSERT INTO Results (match_id, goals_local, goals_visitor) VALUES (%d, %d, %d)", match.MatchID, match.GoalsLocal, match.GoalsVisitor)
-    id, err := database.InsertDB(query)
+
+    query := fmt.Sprintf("UPDATE GameMatch SET goals_local = %d, goals_visitor = %d WHERE match_id = %d", *match.GoalsLocal, *match.GoalsVisitor, match.MatchID)
+    rowsAffected, err := database.UpdateDB(query)
     if err != nil {
-        utils.ErrorLogger.Println("Error inserting result: ", err)
-        return 0, fmt.Errorf("error inserting result: %v", err)
+        utils.ErrorLogger.Println("Error updating result: ", err)
+        return 0, fmt.Errorf("error updating result: %v", err)
     }
-    return id, nil
+    if rowsAffected == 0 {
+        return 0, fmt.Errorf("no match found with ID: %d", match.MatchID)
+    }
+    return rowsAffected, nil
 }
+
 
 
 func (r *MatchService) GetMatchesNotPlayedYet() ([]models.Match, error) {

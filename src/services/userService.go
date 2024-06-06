@@ -6,7 +6,6 @@ import (
 	"bd2-backend/src/hashing"
     "bd2-backend/src/models"
 	"bd2-backend/src/utils"
-    "strconv"
 )
 
 type UserService struct {
@@ -31,7 +30,7 @@ func (u *UserService) ValidateLogin() (bool, error) {
     if !u.checkUserExists() {
         return false, fmt.Errorf("user does not exist")
     }
-    query := fmt.Sprintf("SELECT user_id, password FROM User WHERE email = '%s'", u.User.Email)
+    query := fmt.Sprintf("SELECT document_id, password FROM User WHERE email = '%s'", u.User.Email)
     rows, err := database.QueryDB(query)
     if err != nil {
         utils.ErrorLogger.Println(err.Error())
@@ -40,7 +39,7 @@ func (u *UserService) ValidateLogin() (bool, error) {
     var hashFromBD string
     for rows.Next() {
         i++
-        err = rows.Scan(&u.User.ID, &hashFromBD)
+        err = rows.Scan(&u.User.DocumentID, &hashFromBD)
         if err != nil {
             utils.ErrorLogger.Println(err.Error())
         }
@@ -80,20 +79,20 @@ func (u *UserService) CreateUser() (int64, error) {
         utils.ErrorLogger.Println("Error creating user: ", err)
         return 0, fmt.Errorf("error creating user: %v", err)
     }
-    u.User.ID = int(id)
+    u.User.DocumentID = string(id)
 
     return id, nil
 }
 
 func (u *UserService) GetUser() (models.User, error) {
-    query := fmt.Sprintf("SELECT user_id as Id, first_name as firstName, last_name as lastName, email, role FROM User WHERE id = %s", strconv.Itoa(u.User.ID))
+    query := fmt.Sprintf("SELECT document_id as Id, first_name as firstName, last_name as lastName, email, role FROM User WHERE id = %s", u.User.DocumentID)
     rows, err := database.QueryDB(query)
     if err != nil {
         utils.ErrorLogger.Println("Error getting user: ", err)
         return models.User{}, fmt.Errorf("error getting user: %v", err)
     }
     for rows.Next() {
-        err = rows.Scan(&u.User.ID, &u.User.FirstName, &u.User.LastName, &u.User.Email, &u.User.Role)
+        err = rows.Scan(&u.User.DocumentID, &u.User.FirstName, &u.User.LastName, &u.User.Email, &u.User.Role)
         if err != nil {
             utils.ErrorLogger.Println("Error getting user: ", err)
             return models.User{}, fmt.Errorf("error getting user: %v", err)

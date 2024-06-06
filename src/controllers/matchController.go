@@ -16,8 +16,9 @@ import (
 
 var (
 	matchService = services.MatchService{}
+	scoreService = services.ScoreService{}
+	UtilsService = services.UtilsService{}
 )
-
 
 func validateQueryParams(queryParams map[string]string) (time.Time, int, int, int, error) {
 	matchDate, errMatchDate := time.Parse(time.RFC3339, queryParams["match_date"])
@@ -32,7 +33,7 @@ func validateQueryParams(queryParams map[string]string) (time.Time, int, int, in
 }
 
 func validateEntities(championshipID, teamLocalID, teamVisitorID int) error {
-	if ok, err := matchService.ValidateChampionship(championshipID); err != nil || !ok {
+	if ok, err := championshipService.ValidateChampionship(championshipID); err != nil || !ok {
 		return fmt.Errorf("invalid championship_id %d: %v", championshipID, err)
 	}
 	if ok, err := teamService.CheckTeamExistsByID(teamLocalID); err != nil || !ok {
@@ -81,8 +82,8 @@ func GetMatchResult(w http.ResponseWriter, r *http.Request) {
 
 func InsertMatch(w http.ResponseWriter, r *http.Request) {
 	queryParams := map[string]string{
-		"match_date":     r.URL.Query().Get("match_date"),
-		"team_local_id":  r.URL.Query().Get("team_local_id"),
+		"match_date":      r.URL.Query().Get("match_date"),
+		"team_local_id":   r.URL.Query().Get("team_local_id"),
 		"team_visitor_id": r.URL.Query().Get("team_visitor_id"),
 		"championship_id": r.URL.Query().Get("championship_id"),
 	}
@@ -118,12 +119,12 @@ func InsertMatch(w http.ResponseWriter, r *http.Request) {
 
 func UpdateMatch(w http.ResponseWriter, r *http.Request) {
 	queryParams := map[string]string{
-		"match_id":       r.URL.Query().Get("match_id"),
-		"match_date":     r.URL.Query().Get("match_date"),
-		"team_local_id":  r.URL.Query().Get("team_local_id"),
+		"match_id":        r.URL.Query().Get("match_id"),
+		"match_date":      r.URL.Query().Get("match_date"),
+		"team_local_id":   r.URL.Query().Get("team_local_id"),
 		"team_visitor_id": r.URL.Query().Get("team_visitor_id"),
-		"goals_local":    r.URL.Query().Get("goals_local"),
-		"goals_visitor":  r.URL.Query().Get("goals_visitor"),
+		"goals_local":     r.URL.Query().Get("goals_local"),
+		"goals_visitor":   r.URL.Query().Get("goals_visitor"),
 		"championship_id": r.URL.Query().Get("championship_id"),
 	}
 
@@ -190,6 +191,9 @@ func InsertResult(w http.ResponseWriter, r *http.Request) {
 	matchID, errMatchID := strconv.Atoi(queryParams["match_id"])
 	goalsLocal, errGoalsLocal := strconv.Atoi(queryParams["goals_local"])
 	goalsVisitor, errGoalsVisitor := strconv.Atoi(queryParams["goals_visitor"])
+	utils.InfoLogger.Println("MatchID Controller: ", matchID)
+	utils.InfoLogger.Println("GoalsLocal Controller: ", goalsLocal)
+	utils.InfoLogger.Println("GoalsVisitor Controller: ", goalsVisitor)
 
 	if errMatchID != nil || errGoalsLocal != nil || errGoalsVisitor != nil {
 		utils.RespondWithError(w, http.StatusBadRequest, "Invalid query parameters", fmt.Errorf("%v %v %v", errMatchID, errGoalsLocal, errGoalsVisitor))
@@ -211,10 +215,51 @@ func InsertResult(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		utils.RespondWithError(w, http.StatusInternalServerError, "Error inserting result", err)
 		return
+	}else {
+		utils.InfoLogger.Println("Result inserted successfully to mathc_id: ", id)
 	}
+
+	err = calculateAndAssignPoints(matchID, goalsLocal, goalsVisitor)
+	if err != nil {
+		utils.RespondWithError(w, http.StatusInternalServerError, "Error calculating and assigning points", err)
+		return
+	}
+
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(responses.Response{Data: "Result inserted successfully with id: " + strconv.Itoa(int(id))})
+}
+
+func calculateAndAssignPoints(matchID, goalsLocal, goalsVisitor int) error {
+	predictions, err := predictionService.GetPredictionsByMatchID(matchID)
+	if err != nil {
+		return fmt.Errorf("error getting predictions: %v", err)
+	}
+
+	for _, prediction := range predictions {
+		points, err := calculatePoints(prediction.GoalsLocal, prediction.GoalsVisitor, goalsLocal, goalsVisitor)
+		if err != nil {
+			return fmt.Errorf("error calculating points for user %v: %v", prediction.DocumentID, err)
+		}
+		err = scoreService.InsertOrUpdateScore(prediction.DocumentID, matchID, points)
+		if err != nil {
+			return fmt.Errorf("error updating score for user %v: %v", prediction.DocumentID, err)
+		}
+	}
+
+	return nil
+}
+
+func calculatePoints(predictedLocal, predictedVisitor, actualLocal, actualVisitor int) (int, error) {
+	if predictedLocal == actualLocal && predictedVisitor == actualVisitor {
+		return UtilsService.GetPointsExactResult() // Exact match
+	} else if (predictedLocal > predictedVisitor && actualLocal > actualVisitor) ||
+		(predictedLocal < predictedVisitor && actualLocal < actualVisitor) ||
+		(predictedLocal == predictedVisitor && actualLocal == actualVisitor) {
+		return UtilsService.GetPointsCorrectResult() // Correct result
+	} else {
+		return 0, nil // Incorrect result
+	}
 }
 
 func GetMatchesNotPlayedYet(w http.ResponseWriter, r *http.Request) {
@@ -227,4 +272,3 @@ func GetMatchesNotPlayedYet(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(matches)
 }
-

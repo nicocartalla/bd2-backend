@@ -37,26 +37,26 @@ func GetPredictionsByUser(w http.ResponseWriter, r *http.Request) {
 
 func InsertPrediction(w http.ResponseWriter, r *http.Request) {
 	queryParams := map[string]string{
-		"user_id":      r.URL.Query().Get("user_id"),
+		"document_id":      r.URL.Query().Get("document_id"),
 		"match_id":     r.URL.Query().Get("match_id"),
 		"goals_local":  r.URL.Query().Get("goals_local"),
 		"goals_visitor": r.URL.Query().Get("goals_visitor"),
 		"group_id":     r.URL.Query().Get("group_id"),
 	}
 
-	userID, errUserID := strconv.Atoi(queryParams["user_id"])
+	documentID := queryParams["document_id"]
 	matchID, errMatchID := strconv.Atoi(queryParams["match_id"])
 	goalsLocal, errGoalsLocal := strconv.Atoi(queryParams["goals_local"])
 	goalsVisitor, errGoalsVisitor := strconv.Atoi(queryParams["goals_visitor"])
 	groupID, errGroupID := strconv.Atoi(queryParams["group_id"])
 
-	if errUserID != nil || errMatchID != nil || errGoalsLocal != nil || errGoalsVisitor != nil || errGroupID != nil {
-		utils.RespondWithError(w, http.StatusBadRequest, "Invalid query parameters", fmt.Errorf("%v %v %v %v %v", errUserID, errMatchID, errGoalsLocal, errGoalsVisitor, errGroupID))
+	if errMatchID != nil || errGoalsLocal != nil || errGoalsVisitor != nil || errGroupID != nil {
+		utils.RespondWithError(w, http.StatusBadRequest, "Invalid query parameters", fmt.Errorf("%v %v %v %v", errMatchID, errGoalsLocal, errGoalsVisitor, errGroupID))
 		return
 	}
 
 	prediction := models.Prediction{
-		UserID:       userID,
+		DocumentID:   documentID,
 		MatchID:      matchID,
 		GoalsLocal:   goalsLocal,
 		GoalsVisitor: goalsVisitor,

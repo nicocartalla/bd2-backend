@@ -18,12 +18,6 @@ var (
 	matchService = services.MatchService{}
 )
 
-func respondWithError(w http.ResponseWriter, code int, message string, err error) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(code)
-	utils.ErrorLogger.Println(message, err)
-	json.NewEncoder(w).Encode(responses.Exception{Message: message})
-}
 
 func validateQueryParams(queryParams map[string]string) (time.Time, int, int, int, error) {
 	matchDate, errMatchDate := time.Parse(time.RFC3339, queryParams["match_date"])
@@ -53,7 +47,7 @@ func validateEntities(championshipID, teamLocalID, teamVisitorID int) error {
 func GetAllMatchResults(w http.ResponseWriter, r *http.Request) {
 	teams, err := matchService.GetAllMatchResults()
 	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, "Error al obtener los equipos", err)
+		utils.RespondWithError(w, http.StatusInternalServerError, "Error al obtener los equipos", err)
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
@@ -65,18 +59,18 @@ func GetMatchResult(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	matchID, err := strconv.Atoi(vars["match_id"])
 	if err != nil {
-		respondWithError(w, http.StatusBadRequest, "Invalid match_id", err)
+		utils.RespondWithError(w, http.StatusBadRequest, "Invalid match_id", err)
 		return
 	}
 
 	result, err := matchService.GetMatchResult(matchID)
 	if err != nil {
 		if err.Error() == fmt.Sprintf("no match found for match_id: %d", matchID) {
-			respondWithError(w, http.StatusNotFound, err.Error(), err)
+			utils.RespondWithError(w, http.StatusNotFound, err.Error(), err)
 		} else if err.Error() == fmt.Sprintf("match with match_id: %d has not been played yet", matchID) {
-			respondWithError(w, http.StatusBadRequest, err.Error(), err)
+			utils.RespondWithError(w, http.StatusBadRequest, err.Error(), err)
 		} else {
-			respondWithError(w, http.StatusInternalServerError, "Error getting result", err)
+			utils.RespondWithError(w, http.StatusInternalServerError, "Error getting result", err)
 		}
 		return
 	}
@@ -95,12 +89,12 @@ func InsertMatch(w http.ResponseWriter, r *http.Request) {
 
 	matchDate, teamLocalID, teamVisitorID, championshipID, err := validateQueryParams(queryParams)
 	if err != nil {
-		respondWithError(w, http.StatusBadRequest, "Invalid query parameters", err)
+		utils.RespondWithError(w, http.StatusBadRequest, "Invalid query parameters", err)
 		return
 	}
 
 	if err := validateEntities(championshipID, teamLocalID, teamVisitorID); err != nil {
-		respondWithError(w, http.StatusBadRequest, err.Error(), err)
+		utils.RespondWithError(w, http.StatusBadRequest, err.Error(), err)
 		return
 	}
 
@@ -113,7 +107,7 @@ func InsertMatch(w http.ResponseWriter, r *http.Request) {
 
 	id, err := matchService.InsertMatch(match)
 	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, "Error creating match", err)
+		utils.RespondWithError(w, http.StatusInternalServerError, "Error creating match", err)
 		return
 	}
 
@@ -139,12 +133,12 @@ func UpdateMatch(w http.ResponseWriter, r *http.Request) {
 
 	matchDate, teamLocalID, teamVisitorID, championshipID, err := validateQueryParams(queryParams)
 	if err != nil || errMatchID != nil {
-		respondWithError(w, http.StatusBadRequest, "Invalid query parameters", fmt.Errorf("%v %v %v %v", err, errMatchID, errGoalsLocal, errGoalsVisitor))
+		utils.RespondWithError(w, http.StatusBadRequest, "Invalid query parameters", fmt.Errorf("%v %v %v %v", err, errMatchID, errGoalsLocal, errGoalsVisitor))
 		return
 	}
 
 	if err := validateEntities(championshipID, teamLocalID, teamVisitorID); err != nil {
-		respondWithError(w, http.StatusBadRequest, err.Error(), err)
+		utils.RespondWithError(w, http.StatusBadRequest, err.Error(), err)
 		return
 	}
 
@@ -160,7 +154,7 @@ func UpdateMatch(w http.ResponseWriter, r *http.Request) {
 
 	id, err := matchService.UpdateMatch(match)
 	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, "Error updating match", err)
+		utils.RespondWithError(w, http.StatusInternalServerError, "Error updating match", err)
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
@@ -172,13 +166,13 @@ func DeleteMatch(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	matchID, err := strconv.Atoi(vars["match_id"])
 	if err != nil {
-		respondWithError(w, http.StatusBadRequest, "Invalid match_id", err)
+		utils.RespondWithError(w, http.StatusBadRequest, "Invalid match_id", err)
 		return
 	}
 
 	id, err := matchService.DeleteMatch(matchID)
 	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, "Error deleting match", err)
+		utils.RespondWithError(w, http.StatusInternalServerError, "Error deleting match", err)
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
@@ -198,7 +192,7 @@ func InsertResult(w http.ResponseWriter, r *http.Request) {
 	goalsVisitor, errGoalsVisitor := strconv.Atoi(queryParams["goals_visitor"])
 
 	if errMatchID != nil || errGoalsLocal != nil || errGoalsVisitor != nil {
-		respondWithError(w, http.StatusBadRequest, "Invalid query parameters", fmt.Errorf("%v %v %v", errMatchID, errGoalsLocal, errGoalsVisitor))
+		utils.RespondWithError(w, http.StatusBadRequest, "Invalid query parameters", fmt.Errorf("%v %v %v", errMatchID, errGoalsLocal, errGoalsVisitor))
 		return
 	}
 	matchData := models.Match{
@@ -209,13 +203,13 @@ func InsertResult(w http.ResponseWriter, r *http.Request) {
 
 	match, err := matchService.ValidateMatch(matchID)
 	if err != nil || !match {
-		respondWithError(w, http.StatusBadRequest, "Invalid match_id, this match not exist", err)
+		utils.RespondWithError(w, http.StatusBadRequest, "Invalid match_id, this match not exist", err)
 		return
 	}
 
 	id, err := matchService.InsertResult(matchData)
 	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, "Error inserting result", err)
+		utils.RespondWithError(w, http.StatusInternalServerError, "Error inserting result", err)
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
@@ -226,7 +220,7 @@ func InsertResult(w http.ResponseWriter, r *http.Request) {
 func GetMatchesNotPlayedYet(w http.ResponseWriter, r *http.Request) {
 	matches, err := matchService.GetMatchesNotPlayedYet()
 	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, "Error getting matches", err)
+		utils.RespondWithError(w, http.StatusInternalServerError, "Error getting matches", err)
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")

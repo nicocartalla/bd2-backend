@@ -44,7 +44,7 @@ func (r *TeamService) CheckTeamExistsByID(teamID int) (bool, error) {
 }
 
 func (t *TeamService) GetTeams() ([]models.Team, error) {
-	query := "SELECT team_id, name FROM Teams"
+	query := "SELECT team_id, name, url_logo, description FROM Teams"
 	rows, err := database.QueryDB(query)
 	if err != nil {
 		utils.ErrorLogger.Println("Error getting teams: ", err)
@@ -55,7 +55,7 @@ func (t *TeamService) GetTeams() ([]models.Team, error) {
 	var teams []models.Team
 	for rows.Next() {
 		var team models.Team
-		err = rows.Scan(&team.ID, &team.Name)
+		err = rows.Scan(&team.ID, &team.Name, &team.URLLogo, &team.Description)
 		if err != nil {
 			utils.ErrorLogger.Println("Error scanning team: ", err)
 			return nil, fmt.Errorf("error scanning team: %v", err)
@@ -63,4 +63,20 @@ func (t *TeamService) GetTeams() ([]models.Team, error) {
 		teams = append(teams, team)
 	}
 	return teams, nil
+}
+
+func (t *TeamService) GetTeamByID(teamID int) (models.Team, error) {
+	var team models.Team
+	query := "SELECT team_id, name, url_logo, description FROM Teams WHERE team_id = ?"
+	row, err := database.QueryRowDB(query, teamID)
+	if err != nil {
+		utils.ErrorLogger.Println("Error getting team: ", err)
+		return models.Team{}, fmt.Errorf("error getting team: %v", err)
+	}
+	err = row.Scan(&team.ID, &team.Name, &team.URLLogo, &team.Description)
+	if err != nil {
+		utils.ErrorLogger.Println("Error scanning team: ", err)
+		return models.Team{}, fmt.Errorf("error scanning team: %v", err)
+	}
+	return team, nil
 }

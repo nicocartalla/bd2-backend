@@ -6,9 +6,10 @@ import (
 	"bd2-backend/src/services"
 	"bd2-backend/src/utils"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
-	"fmt"
+	"io"
 	"github.com/gorilla/mux"
 )
 
@@ -36,33 +37,53 @@ func GetPredictionsByUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func InsertPrediction(w http.ResponseWriter, r *http.Request) {
-	queryParams := map[string]string{
-		"document_id":      r.URL.Query().Get("document_id"),
-		"match_id":     r.URL.Query().Get("match_id"),
-		"goals_local":  r.URL.Query().Get("goals_local"),
-		"goals_visitor": r.URL.Query().Get("goals_visitor"),
-		"group_id":     r.URL.Query().Get("group_id"),
+	var requestBody []byte
+	if r.Body != nil {
+		defer r.Body.Close()
+		body, err := io.ReadAll(r.Body)
+		if err != nil {
+			utils.RespondWithError(w, http.StatusBadRequest, "Invalid request body", err)
+			return
+		}
+		requestBody = body
 	}
 
-	documentID := queryParams["document_id"]
-	matchID, errMatchID := strconv.Atoi(queryParams["match_id"])
-	goalsLocal, errGoalsLocal := strconv.Atoi(queryParams["goals_local"])
-	goalsVisitor, errGoalsVisitor := strconv.Atoi(queryParams["goals_visitor"])
-	groupID, errGroupID := strconv.Atoi(queryParams["group_id"])
+	var requestParams struct {
+		DocumentID   string `json:"document_id"`
+		MatchID      *int    `json:"match_id"`
+		GoalsLocal   *int    `json:"goals_local"`
+		GoalsVisitor *int    `json:"goals_visitor"`
+		GroupID      *int    `json:"group_id"`
+	}
 
-	if errMatchID != nil || errGoalsLocal != nil || errGoalsVisitor != nil || errGroupID != nil {
-		utils.RespondWithError(w, http.StatusBadRequest, "Invalid query parameters", fmt.Errorf("%v %v %v %v", errMatchID, errGoalsLocal, errGoalsVisitor, errGroupID))
+	if err := json.Unmarshal(requestBody, &requestParams); err != nil {
+		utils.RespondWithError(w, http.StatusBadRequest, "Error decoding request body", err)
+		return
+	}
+
+	if requestParams.DocumentID == "" || requestParams.MatchID == nil || requestParams.GoalsLocal == nil || requestParams.GoalsVisitor == nil || requestParams.GroupID == nil {
+		utils.RespondWithError(w, http.StatusBadRequest, "Invalid request parameters", fmt.Errorf("invalid parameters: %v", requestParams))
 		return
 	}
 
 	prediction := models.Prediction{
-		DocumentID:   documentID,
-		MatchID:      matchID,
-		GoalsLocal:   goalsLocal,
-		GoalsVisitor: goalsVisitor,
-		GroupID:      groupID,
+		DocumentID:   requestParams.DocumentID,
+		MatchID:      *requestParams.MatchID,
+		GoalsLocal:   *requestParams.GoalsLocal,
+		GoalsVisitor: *requestParams.GoalsVisitor,
+		GroupID:      *requestParams.GroupID,
 	}
 
+	if ok, err := matchService.ValidateMatch(prediction.MatchID); err != nil || !ok {
+		utils.RespondWithError(w, http.StatusBadRequest, "Invalid match_id", fmt.Errorf("%d: %v", prediction.MatchID, err))
+		return
+	}
+
+	if ok, err := matchService.GetMatchNotPlayedYet(prediction.MatchID); err != nil || !ok {
+		utils.RespondWithError(w, http.StatusBadRequest, "Match has been played or the hours until played is less than permitted", fmt.Errorf("%d: %v", prediction.MatchID, err))
+		return
+	}
+	 
 	id, err := predictionService.InsertPrediction(prediction)
 	if err != nil {
 		utils.RespondWithError(w, http.StatusInternalServerError, "Error inserting prediction", err)
@@ -72,4 +93,5 @@ func InsertPrediction(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(responses.Response{Data: "Prediction created successfully with id: " + strconv.Itoa(int(id))})
+	utils.InfoLogger.Println("Prediction created successfully with id: ", id)
 }

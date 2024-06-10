@@ -9,10 +9,6 @@ import (
 	"github.com/gorilla/mux"
 )
 
-type createTeamResponse struct {
-	ID		int    `json:"id"`
-	Name	string `json:"name"`
-}
 
 var (
 	teamService = &services.TeamService{}

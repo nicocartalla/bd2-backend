@@ -17,7 +17,7 @@ func getPredictionsByUser(r *mux.Router) *mux.Router {
 func createPrediction(r *mux.Router) *mux.Router {
 	a := r.PathPrefix("/create").Subrouter()
 	a.Use(mux.CORSMethodMiddleware(a))
-	a.HandleFunc("", controllers.InsertPrediction).Methods("GET")
+	a.HandleFunc("", controllers.InsertPrediction).Methods("POST")
 	a.MethodNotAllowedHandler = http.HandlerFunc(MethodNotAllowed)
 	return a
 }

@@ -101,8 +101,7 @@ func (r *MatchService) DeleteMatch(matchID int) (int64, error) {
     return id, nil
 }
 
-func (r *MatchService) InsertResult(match models.Match) (int64, error) {
-
+func (r *MatchService) InsertResult(match models.Match) (int, error) {
     query := fmt.Sprintf("UPDATE GameMatch SET goals_local = %d, goals_visitor = %d WHERE match_id = %d", *match.GoalsLocal, *match.GoalsVisitor, match.MatchID)
     rowsAffected, err := database.UpdateDB(query)
     if err != nil {
@@ -110,11 +109,27 @@ func (r *MatchService) InsertResult(match models.Match) (int64, error) {
         return 0, fmt.Errorf("error updating result: %v", err)
     }
     if rowsAffected == 0 {
-        return 0, fmt.Errorf("no match found with ID: %d", match.MatchID)
-    }
-    return rowsAffected, nil
-}
+        checkQuery := "SELECT COUNT(1) FROM GameMatch WHERE match_id = ?"
+        count, err := database.QueryRowDB(checkQuery, match.MatchID)
+        if err != nil {
+            utils.ErrorLogger.Println("Error checking match existence: ", err)
+            return 0, fmt.Errorf("error checking match existence: %v", err)
+        }
+        var matchExists int
+        err = count.Scan(&matchExists)
+        if err != nil {
+            utils.ErrorLogger.Println("Error scanning match existence: ", err)
+            return 0, fmt.Errorf("error scanning match existence: %v", err)
+        }
 
+        if matchExists == 0 {
+            return 0, fmt.Errorf("no match found with ID: %d", match.MatchID)
+        } else {
+            return 0, fmt.Errorf("no changes made to match with ID: %d, results might be the same as before", match.MatchID)
+        }
+    }
+    return match.MatchID, nil
+}
 
 
 func (r *MatchService) GetMatchesNotPlayedYet() ([]models.Match, error) {
@@ -137,5 +152,24 @@ func (r *MatchService) GetMatchesNotPlayedYet() ([]models.Match, error) {
         matches = append(matches, match)
     }
     return matches, nil
+}
+
+// Get match not played yet, return true if match exists and has not been played yet
+func (r *MatchService) GetMatchNotPlayedYet(matchID int) (bool, error) {
+    var match models.Match
+    query := "SELECT match_id FROM GameMatch WHERE match_id = ? AND match_date > NOW() + INTERVAL (SELECT hours_until_match FROM Utils) HOUR"
+    row, err := database.QueryRowDB(query, matchID)
+    if err != nil {
+        utils.ErrorLogger.Println("Error getting match to play: ", err)
+        return false, fmt.Errorf("error getting match to play: %v", err)
+    }
+    err = row.Scan(&match.MatchID)
+    if err == sql.ErrNoRows {
+        return false, fmt.Errorf("no match found with ID: %d", matchID)
+    } else if err != nil {
+        utils.ErrorLogger.Println("Error scanning match: ", err)
+        return false, fmt.Errorf("error scanning match: %v", err)
+    }
+    return true, nil
 }
 

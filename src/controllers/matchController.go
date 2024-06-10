@@ -7,6 +7,7 @@ import (
 	"bd2-backend/src/utils"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"strconv"
 	"time"
@@ -20,16 +21,24 @@ var (
 	UtilsService = services.UtilsService{}
 )
 
-func validateQueryParams(queryParams map[string]string) (time.Time, int, int, int, error) {
-	matchDate, errMatchDate := time.Parse(time.RFC3339, queryParams["match_date"])
-	teamLocalID, errTeamLocalID := strconv.Atoi(queryParams["team_local_id"])
-	teamVisitorID, errVisitorID := strconv.Atoi(queryParams["team_visitor_id"])
-	championshipID, errChampionshipID := strconv.Atoi(queryParams["championship_id"])
-
-	if errMatchDate != nil || errTeamLocalID != nil || errVisitorID != nil || errChampionshipID != nil {
-		return time.Time{}, 0, 0, 0, fmt.Errorf("invalid query parameters: %v %v %v %v", errMatchDate, errTeamLocalID, errVisitorID, errChampionshipID)
+func validateBodyParams(body []byte) (time.Time, int, int, int, error) {
+	var requestBody struct {
+		MatchDate      string `json:"match_date"`
+		TeamLocalID    int    `json:"team_local_id"`
+		TeamVisitorID  int    `json:"team_visitor_id"`
+		ChampionshipID int    `json:"championship_id"`
 	}
-	return matchDate, teamLocalID, teamVisitorID, championshipID, nil
+
+	if err := json.Unmarshal(body, &requestBody); err != nil {
+		return time.Time{}, 0, 0, 0, fmt.Errorf("error decoding request body: %v", err)
+	}
+
+	matchDate, errMatchDate := time.Parse(time.RFC3339, requestBody.MatchDate)
+	if errMatchDate != nil {
+		return time.Time{}, 0, 0, 0, fmt.Errorf("invalid match_date format: %v", errMatchDate)
+	}
+
+	return matchDate, requestBody.TeamLocalID, requestBody.TeamVisitorID, requestBody.ChampionshipID, nil
 }
 
 func validateEntities(championshipID, teamLocalID, teamVisitorID int) error {
@@ -81,16 +90,20 @@ func GetMatchResult(w http.ResponseWriter, r *http.Request) {
 }
 
 func InsertMatch(w http.ResponseWriter, r *http.Request) {
-	queryParams := map[string]string{
-		"match_date":      r.URL.Query().Get("match_date"),
-		"team_local_id":   r.URL.Query().Get("team_local_id"),
-		"team_visitor_id": r.URL.Query().Get("team_visitor_id"),
-		"championship_id": r.URL.Query().Get("championship_id"),
+	var requestBody []byte
+	if r.Body != nil {
+		defer r.Body.Close()
+		body, err := io.ReadAll(r.Body)
+		if err != nil {
+			utils.RespondWithError(w, http.StatusBadRequest, "Invalid request body", err)
+			return
+		}
+		requestBody = body
 	}
 
-	matchDate, teamLocalID, teamVisitorID, championshipID, err := validateQueryParams(queryParams)
+	matchDate, teamLocalID, teamVisitorID, championshipID, err := validateBodyParams(requestBody)
 	if err != nil {
-		utils.RespondWithError(w, http.StatusBadRequest, "Invalid query parameters", err)
+		utils.RespondWithError(w, http.StatusBadRequest, "Invalid request body", err)
 		return
 	}
 
@@ -118,27 +131,43 @@ func InsertMatch(w http.ResponseWriter, r *http.Request) {
 }
 
 func UpdateMatch(w http.ResponseWriter, r *http.Request) {
-	queryParams := map[string]string{
-		"match_id":        r.URL.Query().Get("match_id"),
-		"match_date":      r.URL.Query().Get("match_date"),
-		"team_local_id":   r.URL.Query().Get("team_local_id"),
-		"team_visitor_id": r.URL.Query().Get("team_visitor_id"),
-		"goals_local":     r.URL.Query().Get("goals_local"),
-		"goals_visitor":   r.URL.Query().Get("goals_visitor"),
-		"championship_id": r.URL.Query().Get("championship_id"),
+	var requestBody []byte
+	if r.Body != nil {
+		defer r.Body.Close()
+		body, err := io.ReadAll(r.Body)
+		if err != nil {
+			utils.RespondWithError(w, http.StatusBadRequest, "Invalid request body", err)
+			return
+		}
+		requestBody = body
 	}
 
-	matchID, errMatchID := strconv.Atoi(queryParams["match_id"])
-	goalsLocal, errGoalsLocal := strconv.Atoi(queryParams["goals_local"])
-	goalsVisitor, errGoalsVisitor := strconv.Atoi(queryParams["goals_visitor"])
+	var requestParams struct {
+		MatchID        int    `json:"match_id"`
+		MatchDate      string `json:"match_date"`
+		TeamLocalID    int    `json:"team_local_id"`
+		TeamVisitorID  int    `json:"team_visitor_id"`
+		GoalsLocal     int    `json:"goals_local"`
+		GoalsVisitor   int    `json:"goals_visitor"`
+		ChampionshipID int    `json:"championship_id"`
+	}
 
-	matchDate, teamLocalID, teamVisitorID, championshipID, err := validateQueryParams(queryParams)
-	if err != nil || errMatchID != nil {
-		utils.RespondWithError(w, http.StatusBadRequest, "Invalid query parameters", fmt.Errorf("%v %v %v %v", err, errMatchID, errGoalsLocal, errGoalsVisitor))
+	if err := json.Unmarshal(requestBody, &requestParams); err != nil {
+		utils.RespondWithError(w, http.StatusBadRequest, "Error decoding request body", err)
 		return
 	}
 
-	if err := validateEntities(championshipID, teamLocalID, teamVisitorID); err != nil {
+	matchDate, errMatchDate := time.Parse(time.RFC3339, requestParams.MatchDate)
+	if errMatchDate != nil {
+		utils.RespondWithError(w, http.StatusBadRequest, "Invalid match_date format", errMatchDate)
+		return
+	}
+
+	matchID := requestParams.MatchID
+	goalsLocal := requestParams.GoalsLocal
+	goalsVisitor := requestParams.GoalsVisitor
+
+	if err := validateEntities(requestParams.ChampionshipID, requestParams.TeamLocalID, requestParams.TeamVisitorID); err != nil {
 		utils.RespondWithError(w, http.StatusBadRequest, err.Error(), err)
 		return
 	}
@@ -146,9 +175,9 @@ func UpdateMatch(w http.ResponseWriter, r *http.Request) {
 	match := models.Match{
 		MatchID:        matchID,
 		MatchDate:      matchDate,
-		TeamLocalID:    teamLocalID,
-		TeamVisitorID:  teamVisitorID,
-		ChampionshipID: championshipID,
+		TeamLocalID:    requestParams.TeamLocalID,
+		TeamVisitorID:  requestParams.TeamVisitorID,
+		ChampionshipID: requestParams.ChampionshipID,
 		GoalsLocal:     &goalsLocal,
 		GoalsVisitor:   &goalsVisitor,
 	}
@@ -158,6 +187,7 @@ func UpdateMatch(w http.ResponseWriter, r *http.Request) {
 		utils.RespondWithError(w, http.StatusInternalServerError, "Error updating match", err)
 		return
 	}
+
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(responses.Response{Data: "Match updated successfully with id: " + strconv.Itoa(int(id))})
@@ -182,23 +212,41 @@ func DeleteMatch(w http.ResponseWriter, r *http.Request) {
 }
 
 func InsertResult(w http.ResponseWriter, r *http.Request) {
-	queryParams := map[string]string{
-		"match_id":      r.URL.Query().Get("match_id"),
-		"goals_local":   r.URL.Query().Get("goals_local"),
-		"goals_visitor": r.URL.Query().Get("goals_visitor"),
+	var requestBody []byte
+	if r.Body != nil {
+		defer r.Body.Close()
+		body, err := io.ReadAll(r.Body)
+		if err != nil {
+			utils.RespondWithError(w, http.StatusBadRequest, "Invalid request body", err)
+			return
+		}
+		requestBody = body
 	}
 
-	matchID, errMatchID := strconv.Atoi(queryParams["match_id"])
-	goalsLocal, errGoalsLocal := strconv.Atoi(queryParams["goals_local"])
-	goalsVisitor, errGoalsVisitor := strconv.Atoi(queryParams["goals_visitor"])
+	var requestParams struct {
+		MatchID      *int `json:"match_id"`
+		GoalsLocal   *int `json:"goals_local"`
+		GoalsVisitor *int `json:"goals_visitor"`
+	}
+
+	if err := json.Unmarshal(requestBody, &requestParams); err != nil {
+		utils.RespondWithError(w, http.StatusBadRequest, "Error decoding request body", err)
+		return
+	}
+
+	matchID := *requestParams.MatchID
+	goalsLocal := *requestParams.GoalsLocal
+	goalsVisitor := *requestParams.GoalsVisitor
+
 	utils.InfoLogger.Println("MatchID Controller: ", matchID)
 	utils.InfoLogger.Println("GoalsLocal Controller: ", goalsLocal)
 	utils.InfoLogger.Println("GoalsVisitor Controller: ", goalsVisitor)
 
-	if errMatchID != nil || errGoalsLocal != nil || errGoalsVisitor != nil {
-		utils.RespondWithError(w, http.StatusBadRequest, "Invalid query parameters", fmt.Errorf("%v %v %v", errMatchID, errGoalsLocal, errGoalsVisitor))
+	if requestParams.MatchID == nil|| requestParams.GoalsLocal == nil || requestParams.GoalsVisitor == nil {
+		utils.RespondWithError(w, http.StatusBadRequest, "Invalid request body", fmt.Errorf("%v %v %v", matchID, goalsLocal, goalsVisitor))
 		return
 	}
+
 	matchData := models.Match{
 		MatchID:      matchID,
 		GoalsLocal:   &goalsLocal,
@@ -215,8 +263,8 @@ func InsertResult(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		utils.RespondWithError(w, http.StatusInternalServerError, "Error inserting result", err)
 		return
-	}else {
-		utils.InfoLogger.Println("Result inserted successfully to mathc_id: ", id)
+	} else {
+		utils.InfoLogger.Println("Result inserted successfully to match_id: ", id)
 	}
 
 	err = calculateAndAssignPoints(matchID, goalsLocal, goalsVisitor)
@@ -252,13 +300,13 @@ func calculateAndAssignPoints(matchID, goalsLocal, goalsVisitor int) error {
 
 func calculatePoints(predictedLocal, predictedVisitor, actualLocal, actualVisitor int) (int, error) {
 	if predictedLocal == actualLocal && predictedVisitor == actualVisitor {
-		return UtilsService.GetPointsExactResult() // Exact match
+		return UtilsService.GetPointsExactResult() 
 	} else if (predictedLocal > predictedVisitor && actualLocal > actualVisitor) ||
 		(predictedLocal < predictedVisitor && actualLocal < actualVisitor) ||
 		(predictedLocal == predictedVisitor && actualLocal == actualVisitor) {
-		return UtilsService.GetPointsCorrectResult() // Correct result
+		return UtilsService.GetPointsCorrectResult() 
 	} else {
-		return 0, nil // Incorrect result
+		return 0, nil 
 	}
 }
 

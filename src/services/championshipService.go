@@ -67,8 +67,8 @@ func (r *ChampionshipService) GetChampionshipByID(id int) (models.Championship, 
 }
 
 func (r *ChampionshipService) CreateChampionship(championship models.Championship) (int64, error) {
-    query := "INSERT INTO Championships (name, year, country, championship_type, champion, subchampion) VALUES (?, ?, ?, ?, ?, ?)"
-    result, err := database.InsertDBParams(query, championship.Name, championship.Year, championship.Country, championship.ChampionshipType, championship.Champion, championship.Subchampion)
+    query := "INSERT INTO Championships (name, year, country, championship_type) VALUES (?, ?, ?, ?)"
+    result, err := database.InsertDBParams(query, championship.Name, championship.Year, championship.Country, championship.ChampionshipType)
     if err != nil {
         utils.ErrorLogger.Println("Error creating championship: ", err)
         return 0, fmt.Errorf("error creating championship: %v", err)
@@ -79,6 +79,17 @@ func (r *ChampionshipService) CreateChampionship(championship models.Championshi
 func (r *ChampionshipService) UpdateChampionship(id int, championship models.Championship) (int64, error) {
     query := "UPDATE Championships SET name = ?, year = ?, country = ?, championship_type = ?, champion = ?, subchampion = ? WHERE championship_id = ?"
     result, err := database.InsertDBParams(query, championship.Name, championship.Year, championship.Country, championship.ChampionshipType, championship.Champion, championship.Subchampion, id)
+    if err != nil {
+        utils.ErrorLogger.Println("Error updating championship: ", err)
+        return 0, fmt.Errorf("error updating championship: %v", err)
+    }
+    return result, nil
+}
+
+//funcion para updetear el championship y el subchampion
+func (r *ChampionshipService) UpdateChampionshipChampion(id int, champion int, subchampion int) (int64, error) {
+    query := "UPDATE Championships SET champion = ?, subchampion = ? WHERE championship_id = ?"
+    result, err := database.InsertDBParams(query, champion, subchampion, id)
     if err != nil {
         utils.ErrorLogger.Println("Error updating championship: ", err)
         return 0, fmt.Errorf("error updating championship: %v", err)

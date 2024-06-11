@@ -16,6 +16,14 @@ func getTeams(r *mux.Router) *mux.Router {
 	return a
 }
 
+func getTeamsByID(r *mux.Router) *mux.Router {
+	a := r.PathPrefix("/{id}").Subrouter()
+	a.Use(mux.CORSMethodMiddleware(a))
+	a.HandleFunc("", controllers.GetTeamByID).Methods("GET")
+	a.MethodNotAllowedHandler = http.HandlerFunc(MethodNotAllowed)
+	return a
+}
+
 func checkTeamExists(r *mux.Router) *mux.Router {
 	a := r.PathPrefix("/exists").Subrouter()
 	a.Use(mux.CORSMethodMiddleware(a))
@@ -26,5 +34,6 @@ func checkTeamExists(r *mux.Router) *mux.Router {
 
 func TeamRouter(r *mux.Router) {
 	getTeams(r)
+	getTeamsByID(r)
 	checkTeamExists(r)
 }

@@ -3,10 +3,10 @@ SET FOREIGN_KEY_CHECKS = 0;
 -- Creación de la tabla User
 CREATE TABLE User (
     document_id VARCHAR(10) PRIMARY KEY,
-    email VARCHAR(255) NOT NULL,
-    last_name VARCHAR(255) NOT NULL,
-    first_name VARCHAR(255) NOT NULL,
-    major VARCHAR(255),
+    email VARCHAR(100) NOT NULL,
+    last_name VARCHAR(50) NOT NULL,
+    first_name VARCHAR(50) NOT NULL,
+    major VARCHAR(30),
     password VARCHAR(255) NOT NULL,
     role VARCHAR(50)
 );
@@ -14,6 +14,8 @@ CREATE TABLE User (
 -- Creación de la tabla Teams
 CREATE TABLE Teams (
     team_id INT PRIMARY KEY AUTO_INCREMENT,
+    description VARCHAR(100),
+    url_logo VARCHAR(255),
     name VARCHAR(255) NOT NULL
 );
 
@@ -22,7 +24,7 @@ CREATE TABLE Championships (
     championship_id INT PRIMARY KEY AUTO_INCREMENT,
     name VARCHAR(255) NOT NULL,
     year INT NOT NULL,
-    country VARCHAR(255) NOT NULL,
+    country VARCHAR(50) NOT NULL,
     championship_type VARCHAR(255) NOT NULL,
     champion INT,
     subchampion INT,
@@ -33,9 +35,9 @@ CREATE TABLE Championships (
 -- Creación de la tabla ChampionshipGroups
 CREATE TABLE ChampionshipGroups (
     group_id INT PRIMARY KEY AUTO_INCREMENT,
-    name VARCHAR(255) NOT NULL,
+    name VARCHAR(50) NOT NULL,
     championship_id INT,
-    referredCode VARCHAR(255),
+    referredCode VARCHAR(20),
     champion INT,
     subchampion INT,
     FOREIGN KEY (championship_id) REFERENCES Championships(championship_id),
@@ -141,17 +143,18 @@ INSERT INTO User_ChampionshipGroups (document_id, group_id) VALUES
 ('34567812', 4);
 
 -- Inserción de Equipos
-INSERT INTO Teams (name) VALUES
+INSERT INTO Teams (name, url_logo, description) VALUES
 -- Equipos del Campeonato Uruguayo
-('Nacional'),
-('Peñarol'),
-('Defensor Sporting'),
-('Danubio'),
+('Nacional', 'http://example.com/logos/nacional.png', 'Uruguay - Football Club'),
+('Peñarol', 'http://example.com/logos/penarol.png', 'Uruguay - Football Club'),
+('Defensor Sporting', 'http://example.com/logos/defensor_sporting.png', 'Uruguay - Football Club'),
+('Danubio', 'http://example.com/logos/danubio.png', 'Uruguay - Football Club'),
 -- Equipos de la Premier League
-('Manchester United'),
-('Liverpool'),
-('Chelsea'),
-('Arsenal');
+('Manchester United', 'http://example.com/logos/manchester_united.png', 'England - Football Club'),
+('Liverpool', 'http://example.com/logos/liverpool.png', 'England - Football Club'),
+('Chelsea', 'http://example.com/logos/chelsea.png', 'England - Football Club'),
+('Arsenal', 'http://example.com/logos/arsenal.png', 'England - Football Club');
+
 
 -- Inserción de Equipos y Campeonatos
 INSERT INTO Teams_Championships (team_id, championship_id) VALUES

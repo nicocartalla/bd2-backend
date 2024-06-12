@@ -19,4 +19,4 @@ jobs:
         ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
     - name: Run Deployment Script on Remote Server
-      run: ssh nico@nicolascartalla.duckdns.org -p 22322 /home/nico/bd2/deploy-db.sh
+      run: ssh -o StrictHostKeyChecking=no nico@nicolascartalla.duckdns.org -p 22322 /home/nico/bd2/deploy-db.sh

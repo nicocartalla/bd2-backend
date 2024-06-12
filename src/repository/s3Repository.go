@@ -3,14 +3,14 @@ package repository
 import (
 	"bd2-backend/src/config"
 	"bytes"
+	"context"
 	"fmt"
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/credentials"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/s3"
 	"log"
 	"mime/multipart"
 	"net/http"
+
+	"github.com/minio/minio-go/v7"
+	"github.com/minio/minio-go/v7/pkg/credentials"
 )
 
 var (
@@ -23,8 +23,9 @@ var (
 type s3config struct {
 	accessKey string
 	secretKey string
-	region    string
+	hostname    string
 	bucket    string
+	useSSL    bool
 }
 
 func init() {
@@ -34,59 +35,48 @@ func init() {
 	}
 	envConfig.accessKey = config.AwsS3AccessKeyId
 	envConfig.secretKey = config.AwsS3SecretKey
-	envConfig.region = config.AwsS3Region
+	envConfig.hostname = config.AwsS3Hostname
 	envConfig.bucket = config.AwsS3Bucket
+	envConfig.useSSL = config.AwsS3UseSSL
 
 	InfoLogger = log.New(log.Writer(), "INFO: ", log.Ldate|log.Ltime|log.Lshortfile)
 	WarningLogger = log.New(log.Writer(), "WARNING: ", log.Ldate|log.Ltime|log.Lshortfile)
 	ErrorLogger = log.New(log.Writer(), "ERROR: ", log.Ldate|log.Ltime|log.Lshortfile)
 }
 
-const (
-	AWS_S3_REGION = "" // Region
-	AWS_S3_BUCKET = "" // Bucket
 
-)
 
-func createConnection() *s3.S3 {
-	creds := credentials.NewStaticCredentials(envConfig.accessKey, envConfig.secretKey, "")
-	_, err := creds.Get()
-
+func createConnection() (*minio.Client, error) {
+	client, err := minio.New(envConfig.hostname, &minio.Options{
+		Creds:  credentials.NewStaticV4(envConfig.accessKey, envConfig.secretKey, ""),
+		Secure: envConfig.useSSL,
+	})
 	if err != nil {
-		ErrorLogger.Println("bad credentials", err.Error())
+		ErrorLogger.Println("Error creating MinIO client:", err)
+		return nil, err
 	}
-	//WithRegion("us-west-1")
-	cfg := aws.NewConfig().WithCredentials(creds).WithRegion(envConfig.region)
-	svc := s3.New(session.New(), cfg)
-
-	return svc
-
+	return client, nil
 }
 
-func PutFile(fileHandler *multipart.FileHeader, file multipart.File, transactionid int) (string, error) {
+func PutFile(fileHandler *multipart.FileHeader, file multipart.File, path string) (string, error) {
+	client, err := createConnection()
+	if err != nil {
+		return "", err
+	}
 
-	svc := createConnection()
 	var size int64 = fileHandler.Size
-
 	buffer := make([]byte, size)
 	file.Read(buffer)
 	fileBytes := bytes.NewReader(buffer)
 	fileType := http.DetectContentType(buffer)
 
-	//create path
-	path := fmt.Sprintf("/media/transactions/%d-%s", transactionid, fileHandler.Filename)
-	params := &s3.PutObjectInput{
-		Bucket:        aws.String(envConfig.bucket),
-		Key:           aws.String(path),
-		Body:          fileBytes,
-		ContentLength: aws.Int64(size),
-		ContentType:   aws.String(fileType),
-	}
 
-	_, err := svc.PutObject(params)
+	_, err = client.PutObject(context.Background(), envConfig.bucket, path, fileBytes, size, minio.PutObjectOptions{
+		ContentType: fileType,
+	})
 	if err != nil {
 		return "", err
 	}
-	url := fmt.Sprintf("https://%s.s3.%s.amazonaws.com%s", envConfig.bucket, envConfig.region, path)
+	url := fmt.Sprintf("https://%s/%s", envConfig.hostname, path)
 	return url, nil
 }

@@ -26,16 +26,16 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 
 //	id, errCreate := user.CreateUser()
 	userService.User = user
-	id, errCreate := userService.CreateUser()
+	docId, errCreate := userService.CreateUser()
 	if errCreate != nil {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusInternalServerError)
 		utils.ErrorLogger.Println(errCreate)
-		json.NewEncoder(w).Encode(responses.Exception{Message: "Error al crear el usuario"})
+		json.NewEncoder(w).Encode(responses.Exception{Message: errCreate.Error()})
 		return
 	}
 
-	if id == 0 {
+	if docId == "" {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
 		utils.ErrorLogger.Println(errCreate)
@@ -45,5 +45,5 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(CreateUserResponse{ID: int(id), Status: "User created"})
+	json.NewEncoder(w).Encode(CreateUserResponse{DocumentID: docId, Status: "User created"})
 }

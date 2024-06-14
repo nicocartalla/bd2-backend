@@ -13,24 +13,25 @@ type UserService struct {
 }
 
 func (u *UserService) checkUserExists() bool {
-    query := fmt.Sprintf("SELECT email as Email FROM User WHERE email = '%s'", u.User.Email)
+    query := fmt.Sprintf("SELECT email FROM User WHERE email = '%s'", u.User.Email)
     rows, err := database.QueryDB(query)
     if err != nil {
         utils.ErrorLogger.Println("Error checking if user exists: ", err)
     }
     i := 0
-    var emailDB string
+    var email string
     for rows.Next() {
+        rows.Scan(&email)
         i++
     }
-    return i != 0 && u.User.Email == emailDB
+    return i != 0 && u.User.Email == email
 }
 
 func (u *UserService) ValidateLogin() (bool, error) {
     if !u.checkUserExists() {
         return false, fmt.Errorf("user does not exist")
     }
-    query := fmt.Sprintf("SELECT document_id, password FROM User WHERE email = '%s'", u.User.Email)
+    query := fmt.Sprintf("SELECT email, last_name, first_name, major, role, password FROM User WHERE email = '%s'", u.User.Email)
     rows, err := database.QueryDB(query)
     if err != nil {
         utils.ErrorLogger.Println(err.Error())
@@ -39,7 +40,7 @@ func (u *UserService) ValidateLogin() (bool, error) {
     var hashFromBD string
     for rows.Next() {
         i++
-        err = rows.Scan(&u.User.DocumentID, &hashFromBD)
+        err = rows.Scan(&u.User.Email,&u.User.LastName, &u.User.FirstName, &u.User.Major, &u.User.Role, &hashFromBD)
         if err != nil {
             utils.ErrorLogger.Println(err.Error())
         }
@@ -64,24 +65,23 @@ func (u *UserService) ValidateLogin() (bool, error) {
 //     return fmt.Sprintf("https://ui-avatars.com/api/?name=%s+%s?length=2", u.User.Email, u.User.LastName)
 // }
 
-func (u *UserService) CreateUser() (int64, error) {
+func (u *UserService) CreateUser() (string, error) {
     if u.checkUserExists() {
-        return 0, fmt.Errorf("user already exists")
+        return "", fmt.Errorf("user already exists")
     }
     pswHashed, errHash := hashing.HashPassword(u.User.Password)
     if errHash != nil {
-        return 0, fmt.Errorf("error hashing password")
+        return "", fmt.Errorf("error hashing password")
     }
     u.User.Password = pswHashed
-    query := fmt.Sprintf("INSERT INTO User (email, first_name, last_name, major, password, role) VALUES ('%s', '%s', '%s', '%s', '%s', '%s')", u.User.Email, u.User.FirstName, u.User.LastName, u.User.Major, u.User.Password, u.User.Role)
-    id, err := database.InsertDB(query)
+    query := fmt.Sprintf("INSERT INTO User (document_id, email, first_name, last_name, major, password, role) VALUES ('%s', '%s', '%s', '%s', '%s', '%s', '%s')", u.User.DocumentID, u.User.Email, u.User.FirstName, u.User.LastName, u.User.Major, u.User.Password, u.User.Role)
+    _, err := database.InsertDB(query)
     if err != nil {
         utils.ErrorLogger.Println("Error creating user: ", err)
-        return 0, fmt.Errorf("error creating user: %v", err)
+        return "", fmt.Errorf("error creating user: %v", err)
     }
-    u.User.DocumentID = string(id)
 
-    return id, nil
+    return u.User.DocumentID, nil
 }
 
 func (u *UserService) GetUser() (models.User, error) {

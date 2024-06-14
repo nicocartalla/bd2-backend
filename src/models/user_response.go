@@ -1,6 +1,6 @@
 package models
 
 type CreateUserResponse struct {
-	ID     int    `json:"id"`
+	DocumentID     string    `json:"document_id"`
 	Status string `json:"status"`
 }

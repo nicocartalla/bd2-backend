@@ -39,13 +39,13 @@ func CreateToken(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(responses.Exception{Message: "email and password are required"})
 		return
 	}
-
+	userService.User = user
 	okLogin, errLogin := userService.ValidateLogin()
 	if errLogin != nil {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusUnauthorized)
 		utils.ErrorLogger.Println(errLogin.Error())
-		err := json.NewEncoder(w).Encode(responses.Exception{Message: "Error validating login"})
+		err := json.NewEncoder(w).Encode(responses.Exception{Message: errLogin.Error()})
 		if err != nil {
 			return
 		}
@@ -57,6 +57,7 @@ func CreateToken(w http.ResponseWriter, r *http.Request) {
 		expiration := time.Now().Add(time.Hour * time.Duration(1)).Unix()
 		token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 			"email": 	user.Email,
+			"role":     user.Role,
 			"exp":      expiration,
 		})
 		tokenString, error := token.SignedString(jwtToken)
@@ -68,7 +69,15 @@ func CreateToken(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 
-		json.NewEncoder(w).Encode(models.JwtToken{Token: tokenString, Expiration: expiration})
+		userProfile := models.UserProfile{
+			Email: userService.User.Email,
+			FirstName: userService.User.FirstName,
+			LastName: userService.User.LastName,
+			Major: userService.User.Major,
+			Role: userService.User.Role,
+		}
+
+		json.NewEncoder(w).Encode(models.JwtToken{Token: tokenString, Expiration: expiration, UserProfile: userProfile})
 
 	}
 }

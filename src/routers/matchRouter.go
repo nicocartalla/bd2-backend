@@ -8,23 +8,41 @@ import (
 
 
 
-func getAllMatchResults(r *mux.Router) *mux.Router {
-	a := r.PathPrefix("/result").Subrouter()
+
+func getAllMatchesByChampionshipID(r *mux.Router) *mux.Router {
+	a := r.PathPrefix("/").Subrouter()
 	a.Use(mux.CORSMethodMiddleware(a))
-	a.HandleFunc("", controllers.GetAllMatchResults).Methods("GET")
+	a.HandleFunc("/{championship_id}", controllers.GetAllMatchesByChampionshipID).Methods("GET")
 	a.MethodNotAllowedHandler = http.HandlerFunc(MethodNotAllowed)
 	return a
 }
 
-func getResultsMatch(r *mux.Router) *mux.Router {
-	a := r.PathPrefix("/result/id").Subrouter()
+func getAllPlayedMatchesByChampionshipID(r *mux.Router) *mux.Router {
+	a := r.PathPrefix("/played").Subrouter()
+	a.Use(mux.CORSMethodMiddleware(a))
+	a.HandleFunc("/{championship_id}", controllers.GetAllPlayedMatchesByChampionshipID).Methods("GET")
+	a.MethodNotAllowedHandler = http.HandlerFunc(MethodNotAllowed)
+	return a
+}
+
+func getNotPlayedMatchesByChampionshipID(r *mux.Router) *mux.Router {
+	a := r.PathPrefix("/notplayed").Subrouter()
+	a.Use(mux.CORSMethodMiddleware(a))
+	a.HandleFunc("/{championship_id}", controllers.GetNotPlayedMatchesByChampionshipID).Methods("GET")
+	a.MethodNotAllowedHandler = http.HandlerFunc(MethodNotAllowed)
+	return a
+}
+
+
+func getMatchResultByMatchId(r *mux.Router) *mux.Router {
+	a := r.PathPrefix("/played/id").Subrouter()
 	a.Use(mux.CORSMethodMiddleware(a))
 	a.HandleFunc("/{match_id}", controllers.GetMatchResult).Methods("GET")
 	a.MethodNotAllowedHandler = http.HandlerFunc(MethodNotAllowed)
 	return a
 }
 
-func InsertMatch(r *mux.Router) *mux.Router {
+func insertMatch(r *mux.Router) *mux.Router {
 	a := r.PathPrefix("/create").Subrouter()
 	a.Use(mux.CORSMethodMiddleware(a))
 	a.HandleFunc("", controllers.InsertMatch).Methods("POST")
@@ -32,7 +50,7 @@ func InsertMatch(r *mux.Router) *mux.Router {
 	return a
 }
 
-func UpdateMatch(r *mux.Router) *mux.Router {
+func updateMatch(r *mux.Router) *mux.Router {
 	a := r.PathPrefix("/update").Subrouter()
 	a.Use(mux.CORSMethodMiddleware(a))
 	a.HandleFunc("", controllers.UpdateMatch).Methods("PUT")
@@ -40,7 +58,7 @@ func UpdateMatch(r *mux.Router) *mux.Router {
 	return a
 }
 
-func DeleteMatch(r *mux.Router) *mux.Router {
+func deleteMatch(r *mux.Router) *mux.Router {
 	a := r.PathPrefix("/delete").Subrouter()
 	a.Use(mux.CORSMethodMiddleware(a))
 	a.HandleFunc("", controllers.DeleteMatch).Methods("POST")
@@ -48,7 +66,7 @@ func DeleteMatch(r *mux.Router) *mux.Router {
 	return a
 }
 
-func InsertResult(r *mux.Router) *mux.Router {
+func insertResult(r *mux.Router) *mux.Router {
 	a := r.PathPrefix("/result/insert").Subrouter()
 	a.Use(mux.CORSMethodMiddleware(a))
 	a.HandleFunc("", controllers.InsertResult).Methods("POST")
@@ -56,20 +74,14 @@ func InsertResult(r *mux.Router) *mux.Router {
 	return a
 }
 
-func GetMatchesNotPlayedYet(r *mux.Router) *mux.Router {
-	a := r.PathPrefix("/notplayed").Subrouter()
-	a.Use(mux.CORSMethodMiddleware(a))
-	a.HandleFunc("", controllers.GetMatchesNotPlayedYet).Methods("GET")
-	a.MethodNotAllowedHandler = http.HandlerFunc(MethodNotAllowed)
-	return a
-}
 
 func MatchRouter(r *mux.Router) {
-	getAllMatchResults(r)
-	getResultsMatch(r)
-	InsertMatch(r)
-	UpdateMatch(r)
-	DeleteMatch(r)
-	InsertResult(r)
-	GetMatchesNotPlayedYet(r)
+	getAllMatchesByChampionshipID(r)
+	getAllPlayedMatchesByChampionshipID(r)
+	getNotPlayedMatchesByChampionshipID(r)
+	getMatchResultByMatchId(r)
+	insertMatch(r)
+	updateMatch(r)
+	deleteMatch(r)
+	insertResult(r)
 }

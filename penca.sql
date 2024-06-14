@@ -68,17 +68,17 @@ CREATE TABLE GameMatch (
     FOREIGN KEY (championship_id) REFERENCES Championships(championship_id)
 );
 
--- Creación de la tabla Predictions
 CREATE TABLE Predictions (
-    prediction_id INT PRIMARY KEY AUTO_INCREMENT,
-    goals_local INT NOT NULL,
-    goals_visitor INT NOT NULL,
-    document_id VARCHAR(10),
-    match_id INT,
-    group_id INT,
-    FOREIGN KEY (document_id) REFERENCES User(document_id),
-    FOREIGN KEY (match_id) REFERENCES GameMatch(match_id),
-    FOREIGN KEY (group_id) REFERENCES ChampionshipGroups(group_id)
+    prediction_id INT PRIMARY KEY AUTO_INCREMENT, 
+    goals_local INT NOT NULL, 
+    goals_visitor INT NOT NULL, 
+    document_id VARCHAR(10), 
+    match_id INT, 
+    group_id INT, 
+    UNIQUE KEY unique_prediction (match_id, document_id), 
+    FOREIGN KEY (document_id) REFERENCES User(document_id), 
+    FOREIGN KEY (match_id) REFERENCES GameMatch(match_id), 
+    FOREIGN KEY (group_id) REFERENCES ChampionshipGroups(group_id) 
 );
 
 -- Creación de la tabla Scores

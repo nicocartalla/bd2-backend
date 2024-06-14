@@ -7,9 +7,10 @@ import (
 	"bd2-backend/src/utils"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"strconv"
-	"io"
+
 	"github.com/gorilla/mux"
 )
 
@@ -19,9 +20,9 @@ var (
 
 func GetPredictionsByUser(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	userID, err := strconv.Atoi(vars["user_id"])
+	userID, err := strconv.Atoi(vars["document_id"])
 	if err != nil {
-		utils.RespondWithError(w, http.StatusBadRequest, "Invalid user_id", err)
+		utils.RespondWithError(w, http.StatusBadRequest, "Invalid document_id", err)
 		return
 	}
 
@@ -50,10 +51,10 @@ func InsertPrediction(w http.ResponseWriter, r *http.Request) {
 
 	var requestParams struct {
 		DocumentID   string `json:"document_id"`
-		MatchID      *int    `json:"match_id"`
-		GoalsLocal   *int    `json:"goals_local"`
-		GoalsVisitor *int    `json:"goals_visitor"`
-		GroupID      *int    `json:"group_id"`
+		MatchID      *int   `json:"match_id"`
+		GoalsLocal   *int   `json:"goals_local"`
+		GoalsVisitor *int   `json:"goals_visitor"`
+		GroupID      *int   `json:"group_id"`
 	}
 
 	if err := json.Unmarshal(requestBody, &requestParams); err != nil {
@@ -79,11 +80,11 @@ func InsertPrediction(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if ok, err := matchService.GetMatchNotPlayedYet(prediction.MatchID); err != nil || !ok {
+	if ok, err := matchService.IsMatchUpcoming(prediction.MatchID); err != nil || !ok {
 		utils.RespondWithError(w, http.StatusBadRequest, "Match has been played or the hours until played is less than permitted", fmt.Errorf("%d: %v", prediction.MatchID, err))
 		return
 	}
-	 
+
 	id, err := predictionService.InsertPrediction(prediction)
 	if err != nil {
 		utils.RespondWithError(w, http.StatusInternalServerError, "Error inserting prediction", err)

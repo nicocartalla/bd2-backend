@@ -12,7 +12,7 @@ type PredictionService struct {
 }
 
 func (s *PredictionService) GetPredictionsByUser(userID int) ([]models.Prediction, error) {
-	query := `SELECT prediction_id, user_id, match_id, goals_local, goals_visitor FROM Predictions WHERE user_id = ?`
+	query := `SELECT prediction_id, document_id, match_id, goals_local, goals_visitor FROM Predictions WHERE document_id = ?`
 	rows, err := database.QueryRowsDBParams(query, userID)
 	if err != nil {
 		utils.ErrorLogger.Println("Error querying predictions by user:", err)
@@ -32,12 +32,20 @@ func (s *PredictionService) GetPredictionsByUser(userID int) ([]models.Predictio
 	return predictions, nil
 }
 
+
 func (s *PredictionService) InsertPrediction(prediction models.Prediction) (int64, error) {
-	query := `INSERT INTO Predictions (goals_local, goals_visitor, user_id, match_id, group_id, created_at) VALUES (?, ?, ?, ?, ?, ?)`
+	query := `
+		INSERT INTO Predictions (goals_local, goals_visitor, document_id, match_id, group_id)
+		VALUES (?, ?, ?, ?, ?)
+		ON DUPLICATE KEY UPDATE
+		goals_local = VALUES(goals_local),
+		goals_visitor = VALUES(goals_visitor),
+		group_id = VALUES(group_id)`
+	
 	result, err := database.InsertDBParams(query, prediction.GoalsLocal, prediction.GoalsVisitor, prediction.DocumentID, prediction.MatchID, prediction.GroupID)
 	if err != nil {
-		utils.ErrorLogger.Println("Error inserting prediction:", err)
-		return 0, fmt.Errorf("error inserting prediction: %v", err)
+		utils.ErrorLogger.Println("Error inserting or updating prediction:", err)
+		return 0, fmt.Errorf("error inserting or updating prediction: %v", err)
 	}
 	return result, nil
 }

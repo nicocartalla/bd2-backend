@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"github.com/gorilla/mux"
 	"net/http"
+	"strings"
 )
 
 
@@ -13,11 +14,15 @@ func Routers() *mux.Router {
 	r := mux.NewRouter().StrictSlash(true)
 	enableCORS(r)
 
+	//auth
+	auth := r.PathPrefix("/api/auth").Subrouter()
+	signIn := auth.PathPrefix("/signin").Subrouter()
+	signUp := auth.PathPrefix("/signup").Subrouter()
+
 	//api version 1
 	v1 := r.PathPrefix("/api/v1").Subrouter()
+	v1.Use(middlewareJwt)
 	ping := v1.PathPrefix("/ping").Subrouter()
-	auth := v1.PathPrefix("/authenticate").Subrouter()
-	signup := v1.PathPrefix("/signup").Subrouter()
 	team := v1.PathPrefix("/team").Subrouter()
 	match := v1.PathPrefix("/match").Subrouter()
 	prediction := v1.PathPrefix("/prediction").Subrouter()
@@ -27,12 +32,14 @@ func Routers() *mux.Router {
 	r.MethodNotAllowedHandler = http.HandlerFunc(MethodNotAllowed)
 	utils.InfoLogger.Println("CORS enabled")
 
+	
+	SignInRouter(signIn)
+	utils.InfoLogger.Println("Auth router enabled at /api/auth/signin")
+	SignUpRouter(signUp)
+	utils.InfoLogger.Println("User router enabled at /api/auth/signup")
+
 	PingRouter(ping)
 	utils.InfoLogger.Println("Ping router enabled at /api/v1/ping")
-	AuthRouter(auth)
-	utils.InfoLogger.Println("Auth router enabled at /api/v1/authenticate")
-	SignUpRouter(signup)
-	utils.InfoLogger.Println("User router enabled at /api/v1/signup")
 	TeamRouter(team)
 	utils.InfoLogger.Println("User router enabled at /api/v1/team")
 	MatchRouter(match)
@@ -81,3 +88,24 @@ func middlewareCors(next http.Handler) http.Handler {
 			next.ServeHTTP(w, req)
 		})
 }
+
+
+func middlewareJwt(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	  auth_header := r.Header.Get("Authorization")
+	  if !strings.HasPrefix(auth_header, "Bearer") {
+		  http.Error(w, "Not Authorized", http.StatusUnauthorized)
+		  return
+	  }
+	  
+	  tokenString := strings.TrimPrefix(auth_header, "Bearer ")
+	  
+	  claims, err := utils.GetClaimsFromToken(tokenString)
+	  if err != nil {
+		http.Error(w, err.Error(), http.StatusUnauthorized)
+		return
+  }
+	  r = r.WithContext(utils.SetJWTClaimsContext(r.Context(), claims))
+	  next.ServeHTTP(w, r)
+  })
+  }

@@ -1,32 +1,15 @@
 package controllers
 
 import (
-	"bd2-backend/src/config"
 	"bd2-backend/src/models"
 	"bd2-backend/src/responses"
 	"bd2-backend/src/services"
 	"bd2-backend/src/utils"
 	"encoding/json"
-	"github.com/golang-jwt/jwt/v4"
 	"net/http"
-	"time"
 )
 
-//var jwtToken = []byte("secret")
-var jwtToken []byte
-
-//obtengo la clave para generar el token
-func init() {
-	cfg, err := config.LoadConfig("./")
-	if err != nil {
-		utils.ErrorLogger.Fatal("cannot load config:", err)
-	}
-	jwtToken = []byte(cfg.JwtKey)
-
-}
-
-// CreateToken crea un token JWT
-func CreateToken(w http.ResponseWriter, r *http.Request) {
+func SignIn(w http.ResponseWriter, r *http.Request) {
 
 	var user models.User
 	var userService services.UserService
@@ -54,27 +37,32 @@ func CreateToken(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if okLogin {
-		expiration := time.Now().Add(time.Hour * time.Duration(1)).Unix()
-		token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-			"email": 	user.Email,
-			"role":     user.Role,
-			"exp":      expiration,
-		})
-		tokenString, error := token.SignedString(jwtToken)
-		if error != nil {
-			utils.ErrorLogger.Println(error.Error())
 
+		claim := utils.JwtPayload{
+			Email: userService.User.Email,
+			Role:  userService.User.Role,
+		}
+
+		tokenString, expiration, err := utils.CreateToken(user.DocumentID, claim)
+		if err != nil {
+			utils.ErrorLogger.Println(err.Error())
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusInternalServerError)
+			err := json.NewEncoder(w).Encode(responses.Exception{Message: err.Error()})
+			if err != nil {
+				return
+			}
 		}
 
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 
 		userProfile := models.UserProfile{
-			Email: userService.User.Email,
+			Email:     userService.User.Email,
 			FirstName: userService.User.FirstName,
-			LastName: userService.User.LastName,
-			Major: userService.User.Major,
-			Role: userService.User.Role,
+			LastName:  userService.User.LastName,
+			Major:     userService.User.Major,
+			Role:      userService.User.Role,
 		}
 
 		json.NewEncoder(w).Encode(models.JwtToken{Token: tokenString, Expiration: expiration, UserProfile: userProfile})

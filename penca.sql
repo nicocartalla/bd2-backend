@@ -153,7 +153,25 @@ INSERT INTO Teams (name, url_logo, description) VALUES
 ('Manchester United', 'http://example.com/logos/manchester_united.png', 'England - Football Club'),
 ('Liverpool', 'http://example.com/logos/liverpool.png', 'England - Football Club'),
 ('Chelsea', 'http://example.com/logos/chelsea.png', 'England - Football Club'),
-('Arsenal', 'http://example.com/logos/arsenal.png', 'England - Football Club');
+('Arsenal', 'http://example.com/logos/arsenal.png', 'England - Football Club'),
+('Argentina', 'http://nicolascartalla.duckdns.org:65190/bd2-back/media/teams/Argentina.svg', 'Selección de Argentina'),
+('Bolivia', 'http://nicolascartalla.duckdns.org:65190/bd2-back/media/teams/Bolivia.svg', 'Selección de Bolivia'),
+('Brasil', 'http://nicolascartalla.duckdns.org:65190/bd2-back/media/teams/Brazil.svg', 'Selección de Brasil'),
+('Canada', 'http://nicolascartalla.duckdns.org:65190/bd2-back/media/teams/Canada.svg', 'Selección de Canada'),
+('Chile', 'http://nicolascartalla.duckdns.org:65190/bd2-back/media/teams/Chile.svg', 'Selección de Chile'),
+('Colombia', 'http://nicolascartalla.duckdns.org:65190/bd2-back/media/teams/Colombia.svg', 'Selección de Colombia'),
+('Costa Rica', 'http://nicolascartalla.duckdns.org:65190/bd2-back/media/teams/Costa_Rica.svg', 'Selección de Costa Rica'),
+('Ecuador', 'http://nicolascartalla.duckdns.org:65190/bd2-back/media/teams/Ecuador.svg', 'Selección de Ecuador'),
+('United States', 'http://nicolascartalla.duckdns.org:65190/bd2-back/media/teams/United_States.svg', 'Selección de United States'),
+('Jamaica', 'http://nicolascartalla.duckdns.org:65190/bd2-back/media/teams/Jamaica.svg', 'Selección de Jamaica'),
+('Mexico', 'http://nicolascartalla.duckdns.org:65190/bd2-back/media/teams/Mexico.svg', 'Selección de Mexico'),
+('Panama', 'http://nicolascartalla.duckdns.org:65190/bd2-back/media/teams/Panama.svg', 'Selección de Panama'),
+('Paraguay', 'http://nicolascartalla.duckdns.org:65190/bd2-back/media/teams/Paraguay.svg', 'Selección de Paraguay'),
+('Peru', 'http://nicolascartalla.duckdns.org:65190/bd2-back/media/teams/Peru.svg', 'Selección de Peru'),
+('Uruguay', 'http://nicolascartalla.duckdns.org:65190/bd2-back/media/teams/Uruguay.svg', 'Selección de Uruguay'),
+('Venezuela', 'http://nicolascartalla.duckdns.org:65190/bd2-back/media/teams/Venezuela.svg', 'Selección de Venezuela');
+
+
 
 
 -- Inserción de Equipos y Campeonatos

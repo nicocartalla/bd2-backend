@@ -1,5 +1,7 @@
 package models
-
+import (
+	"time"
+)
 // JwtToken is a JWT token.
 type UserProfile struct {
 	Email string `json:"email"`
@@ -11,7 +13,7 @@ type UserProfile struct {
 
 type JwtToken struct {
 	Token      string `json:"token"`
-	Expiration int64  `json:"expiration"`
+	Expiration time.Time  `json:"expiration"`
 	UserProfile UserProfile `json:"user_profile"`
 	
 }

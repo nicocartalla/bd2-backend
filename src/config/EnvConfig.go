@@ -1,9 +1,9 @@
 package config
 
 import (
+	"fmt"
 	"github.com/spf13/viper"
-	"bd2-backend/src/utils"
-	)
+)
 
 type Config struct {
 	ServerAddress    string `mapstructure:"SERVER_ADDRESS"`
@@ -25,13 +25,13 @@ func LoadConfig(path string) (config Config, err error) {
 
 	err = viper.ReadInConfig()
 	if err != nil {
-		utils.ErrorLogger.Fatalf("Error reading config file, %s", err)
+		fmt.Println("Error reading config file, %s", err)
 		return
 	}
 
 	err = viper.Unmarshal(&config)
 	if err != nil {
-		utils.ErrorLogger.Fatalf("Unable to decode into struct, %v", err)
+		fmt.Println("Unable to decode into struct, %s", err)
 	}
 	return
 }

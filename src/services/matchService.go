@@ -27,9 +27,9 @@ func (r *MatchService) ValidateMatch(matchID int) (bool, error) {
     return matchID == matchIDDB, nil
 }
 
-func (r *MatchService) GetAllMatchResults() ([]models.Match, error) {
-    query := "SELECT * FROM GameMatch WHERE goals_local IS NOT NULL AND goals_visitor IS NOT NULL"
-    rows, err := database.QueryDB(query)
+func (r *MatchService) GetAllMatchesByChampionshipID(championshipID int) ([]models.Match, error) {
+    query := "SELECT * FROM GameMatch WHERE championship_id = ? ORDER BY match_date ASC"
+    rows, err := database.QueryRowsDBParams(query, championshipID)
     if err != nil {
         utils.ErrorLogger.Println("Error getting results: ", err)
         return nil, fmt.Errorf("error getting results: %v", err)
@@ -48,6 +48,52 @@ func (r *MatchService) GetAllMatchResults() ([]models.Match, error) {
     }
     return results, nil
 }
+
+func (r *MatchService) GetAllPlayedMatchesByChampionshipID(championshipID int) ([]models.Match, error) {
+    query := "SELECT * FROM GameMatch WHERE championship_id = ? AND goals_local IS NOT NULL AND goals_visitor IS NOT NULL ORDER BY match_date ASC"
+    rows, err := database.QueryRowsDBParams(query, championshipID)
+    if err != nil {
+        utils.ErrorLogger.Println("Error getting results: ", err)
+        return nil, fmt.Errorf("error getting results: %v", err)
+    }
+    defer rows.Close()
+
+    var results []models.Match
+    for rows.Next() {
+        var result models.Match
+        err = rows.Scan(&result.MatchID, &result.MatchDate, &result.TeamLocalID, &result.TeamVisitorID, &result.GoalsLocal, &result.GoalsVisitor, &result.ChampionshipID)
+        if err != nil {
+            utils.ErrorLogger.Println("Error scanning result: ", err)
+            return nil, fmt.Errorf("error scanning result: %v", err)
+        }
+        results = append(results, result)
+    }
+    return results, nil
+}
+
+
+func (r *MatchService) GetNotPlayedMatchesByChampionshipID(championshipID int) ([]models.Match, error) {
+    query := "SELECT * FROM GameMatch WHERE championship_id = ? AND match_date > NOW() + INTERVAL (SELECT hours_until_match FROM Utils) HOUR ORDER BY match_date ASC"
+    rows, err := database.QueryRowsDBParams(query, championshipID)
+    if err != nil {
+        utils.ErrorLogger.Println("Error getting matches to play: ", err)
+        return nil, fmt.Errorf("error getting matches to play: %v", err)
+    }
+    defer rows.Close()
+
+    var matches []models.Match
+    for rows.Next() {
+        var match models.Match
+        err = rows.Scan(&match.MatchID, &match.MatchDate, &match.TeamLocalID, &match.TeamVisitorID, &match.GoalsLocal, &match.GoalsVisitor, &match.ChampionshipID)
+        if err != nil {
+            utils.ErrorLogger.Println("Error scanning match: ", err)
+            return nil, fmt.Errorf("error scanning match: %v", err)
+        }
+        matches = append(matches, match)
+    }
+    return matches, nil
+}
+
 
 func (r *MatchService) GetMatchResult(matchID int) (models.Match, error) {
     var result models.Match
@@ -132,30 +178,9 @@ func (r *MatchService) InsertResult(match models.Match) (int, error) {
 }
 
 
-func (r *MatchService) GetMatchesNotPlayedYet() ([]models.Match, error) {
-    query := "SELECT * FROM GameMatch WHERE match_date > NOW() + INTERVAL (SELECT hours_until_match FROM Utils) HOUR ORDER BY match_date ASC"
-    rows, err := database.QueryDB(query)
-    if err != nil {
-        utils.ErrorLogger.Println("Error getting matches to play: ", err)
-        return nil, fmt.Errorf("error getting matches to play: %v", err)
-    }
-    defer rows.Close()
-
-    var matches []models.Match
-    for rows.Next() {
-        var match models.Match
-        err = rows.Scan(&match.MatchID, &match.MatchDate, &match.TeamLocalID, &match.TeamVisitorID, &match.GoalsLocal, &match.GoalsVisitor, &match.ChampionshipID)
-        if err != nil {
-            utils.ErrorLogger.Println("Error scanning match: ", err)
-            return nil, fmt.Errorf("error scanning match: %v", err)
-        }
-        matches = append(matches, match)
-    }
-    return matches, nil
-}
 
 // Get match not played yet, return true if match exists and has not been played yet
-func (r *MatchService) GetMatchNotPlayedYet(matchID int) (bool, error) {
+func (r *MatchService) IsMatchUpcoming(matchID int) (bool, error) {
     var match models.Match
     query := "SELECT match_id FROM GameMatch WHERE match_id = ? AND match_date > NOW() + INTERVAL (SELECT hours_until_match FROM Utils) HOUR"
     row, err := database.QueryRowDB(query, matchID)
@@ -172,4 +197,5 @@ func (r *MatchService) GetMatchNotPlayedYet(matchID int) (bool, error) {
     }
     return true, nil
 }
+
 

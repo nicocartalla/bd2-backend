@@ -47,10 +47,19 @@ func deleteChampionship(r *mux.Router) *mux.Router {
     return a
 }
 
+func setChampionshipChampions(r *mux.Router) *mux.Router {
+    a := r.PathPrefix("/setchampions").Subrouter()
+    a.Use(mux.CORSMethodMiddleware(a))
+    a.HandleFunc("", controllers.SetChampionshipChampions).Methods("POST")
+    a.MethodNotAllowedHandler = http.HandlerFunc(MethodNotAllowed)
+    return a
+}
+
 func ChampionshipRouter(r *mux.Router) {
     getAllChampionships(r)
     getChampionshipByID(r)
     createChampionship(r)
     updateChampionship(r)
     deleteChampionship(r)
+    setChampionshipChampions(r)
 }

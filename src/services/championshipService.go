@@ -87,9 +87,9 @@ func (r *ChampionshipService) UpdateChampionship(id int, championship models.Cha
 }
 
 //funcion para updetear el championship y el subchampion
-func (r *ChampionshipService) UpdateChampionshipChampion(id int, champion int, subchampion int) (int64, error) {
+func (r *ChampionshipService) SetChampionshipChampions(championship_id int, champion int, subchampion int) (int64, error) {
     query := "UPDATE Championships SET champion = ?, subchampion = ? WHERE championship_id = ?"
-    result, err := database.InsertDBParams(query, champion, subchampion, id)
+    result, err := database.InsertDBParams(query, champion, subchampion, championship_id)
     if err != nil {
         utils.ErrorLogger.Println("Error updating championship: ", err)
         return 0, fmt.Errorf("error updating championship: %v", err)

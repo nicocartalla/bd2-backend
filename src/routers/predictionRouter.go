@@ -31,7 +31,7 @@ func insertOrUpdatePrediction(r *mux.Router) *mux.Router {
 	return a
 }
 
-func PredictionRouter(r *mux.Router) {
+func PredictionMatchRouter(r *mux.Router) {
 	getPredictionsByUser(r)
 	getPredictionsByUserAndChampionshipID(r)
 	insertOrUpdatePrediction(r)

@@ -12,17 +12,17 @@ type PositionTableService struct{}
 
 func (s *PositionTableService) GetPositionTableByChampionship(championshipID int) ([]models.PositionTable, error) {
 	query := `
-		SELECT u.document_id, u.first_name, u.last_name, gm.championship_id, SUM(s.points) AS points
+		SELECT u.document_id, u.first_name, u.last_name, gm.championship_id, 
+		       COALESCE(SUM(s.points), 0) + COALESCE(sc.points, 0) AS points
 		FROM User u
-		JOIN Scores s ON u.document_id = s.document_id
-		JOIN GameMatch gm ON s.match_id = gm.match_id
-		WHERE gm.championship_id = ?
-		GROUP BY u.document_id, gm.championship_id
+		LEFT JOIN Scores s ON u.document_id = s.document_id
+		LEFT JOIN GameMatch gm ON s.match_id = gm.match_id AND gm.championship_id = ?
+		LEFT JOIN ScoresChampionships sc ON u.document_id = sc.document_id AND sc.championship_id = gm.championship_id
+		WHERE gm.championship_id = ? OR sc.championship_id = ?
+		GROUP BY u.document_id, gm.championship_id, sc.points
 		ORDER BY points DESC
 	`
-	//show query
-	utils.InfoLogger.Println("Query:", query)
-	rows, err := database.QueryRowsDBParams(query, championshipID)
+	rows, err := database.QueryRowsDBParams(query, championshipID, championshipID, championshipID)
 	if err != nil {
 		utils.ErrorLogger.Println("Error querying leaderboard by championship:", err)
 		return nil, fmt.Errorf("error querying leaderboard by championship: %v", err)

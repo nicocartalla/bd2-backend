@@ -10,12 +10,12 @@ import (
 
 
 func getAllMatchesByChampionshipID(r *mux.Router) *mux.Router {
-	a := r.PathPrefix("/").Subrouter()
+	a := r.PathPrefix("/allmatches").Subrouter()
 	a.Use(mux.CORSMethodMiddleware(a))
 	a.HandleFunc("/{championship_id}", controllers.GetAllMatchesByChampionshipID).Methods("GET")
 	a.MethodNotAllowedHandler = http.HandlerFunc(MethodNotAllowed)
 	return a
-}
+} 
 
 func getAllPlayedMatchesByChampionshipID(r *mux.Router) *mux.Router {
 	a := r.PathPrefix("/played").Subrouter()
@@ -43,9 +43,9 @@ func getMatchResultByMatchId(r *mux.Router) *mux.Router {
 }
 
 func insertMatch(r *mux.Router) *mux.Router {
-	a := r.PathPrefix("/create").Subrouter()
+	a := r.PathPrefix("/insert").Subrouter()
 	a.Use(mux.CORSMethodMiddleware(a))
-	a.HandleFunc("", controllers.InsertMatch).Methods("POST")
+	a.HandleFunc("/", controllers.InsertMatch).Methods("POST")
 	a.MethodNotAllowedHandler = http.HandlerFunc(MethodNotAllowed)
 	return a
 }

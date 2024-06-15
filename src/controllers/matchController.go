@@ -21,24 +21,26 @@ var (
 	UtilsService = services.UtilsService{}
 )
 
-func validateBodyParams(body []byte) (time.Time, int, int, int, error) {
-	var requestBody struct {
-		MatchDate      string `json:"match_date"`
-		TeamLocalID    int    `json:"team_local_id"`
-		TeamVisitorID  int    `json:"team_visitor_id"`
-		ChampionshipID int    `json:"championship_id"`
-	}
+func validateBodyParams(body []byte) (time.Time, int, int, int, *int, *int, error) {
+    var requestBody struct {
+        MatchDate      string `json:"match_date"`
+        TeamLocalID    int    `json:"team_local_id"`
+        TeamVisitorID  int    `json:"team_visitor_id"`
+        ChampionshipID int    `json:"championship_id"`
+        StageID        *int   `json:"stage_id"`
+        GroupSID       *int   `json:"group_s_id"`
+    }
 
-	if err := json.Unmarshal(body, &requestBody); err != nil {
-		return time.Time{}, 0, 0, 0, fmt.Errorf("error decoding request body: %v", err)
-	}
+    if err := json.Unmarshal(body, &requestBody); err != nil {
+        return time.Time{}, 0, 0, 0, nil, nil, fmt.Errorf("error decoding request body: %v", err)
+    }
 
-	matchDate, errMatchDate := time.Parse(time.RFC3339, requestBody.MatchDate)
-	if errMatchDate != nil {
-		return time.Time{}, 0, 0, 0, fmt.Errorf("invalid match_date format: %v", errMatchDate)
-	}
+    matchDate, errMatchDate := time.Parse(time.RFC3339, requestBody.MatchDate)
+    if errMatchDate != nil {
+        return time.Time{}, 0, 0, 0, nil, nil, fmt.Errorf("invalid match_date format: %v", errMatchDate)
+    }
 
-	return matchDate, requestBody.TeamLocalID, requestBody.TeamVisitorID, requestBody.ChampionshipID, nil
+    return matchDate, requestBody.TeamLocalID, requestBody.TeamVisitorID, requestBody.ChampionshipID, requestBody.StageID, requestBody.GroupSID, nil
 }
 
 func validateEntities(championshipID, teamLocalID, teamVisitorID int) error {
@@ -161,7 +163,15 @@ func InsertMatch(w http.ResponseWriter, r *http.Request) {
 		requestBody = body
 	}
 
-	matchDate, teamLocalID, teamVisitorID, championshipID, err := validateBodyParams(requestBody)
+	matchDate, teamLocalID, teamVisitorID, championshipID, stageID, groupSID, err := validateBodyParams(requestBody)
+	//PRINT VARIABLES
+	utils.InfoLogger.Println("MatchDate Controller: ", matchDate)
+	utils.InfoLogger.Println("TeamLocalID Controller: ", teamLocalID)
+	utils.InfoLogger.Println("TeamVisitorID Controller: ", teamVisitorID)
+	utils.InfoLogger.Println("ChampionshipID Controller: ", championshipID)
+	utils.InfoLogger.Println("StageID Controller: ", stageID)
+	utils.InfoLogger.Println("GroupSID Controller: ", groupSID)
+
 	if err != nil {
 		utils.RespondWithError(w, http.StatusBadRequest, "Invalid request body", err)
 		return
@@ -177,8 +187,11 @@ func InsertMatch(w http.ResponseWriter, r *http.Request) {
 		TeamLocalID:    teamLocalID,
 		TeamVisitorID:  teamVisitorID,
 		ChampionshipID: championshipID,
+		StageID: 	    stageID,
+		GroupSID:       groupSID,
 	}
-
+	// PRINT MATCH
+	utils.InfoLogger.Println("Match Controller: ", match)
 	id, err := matchService.InsertMatch(match)
 	if err != nil {
 		utils.RespondWithError(w, http.StatusInternalServerError, "Error creating match", err)

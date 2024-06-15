@@ -6,5 +6,4 @@ type Prediction struct {
 	GoalsVisitor int       `json:"goals_visitor"`
 	DocumentID   string    `json:"document_id"`
 	MatchID      int       `json:"match_id"`
-	GroupID      int       `json:"group_id"`
 }

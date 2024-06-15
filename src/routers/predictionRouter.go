@@ -15,6 +15,14 @@ func getPredictionsByUser(r *mux.Router) *mux.Router {
 	return a
 }
 
+func getPredictionsByUserAndChampionshipID(r *mux.Router) *mux.Router {
+	a := r.PathPrefix("").Subrouter()
+	a.Use(mux.CORSMethodMiddleware(a))
+	a.HandleFunc("", controllers.GetPredictionsByUserAndChampionshipID).Methods("GET")
+	a.MethodNotAllowedHandler = http.HandlerFunc(MethodNotAllowed)
+	return a
+}
+
 func insertOrUpdatePrediction(r *mux.Router) *mux.Router {
 	a := r.PathPrefix("/insert").Subrouter()
 	a.Use(mux.CORSMethodMiddleware(a))
@@ -25,5 +33,6 @@ func insertOrUpdatePrediction(r *mux.Router) *mux.Router {
 
 func PredictionRouter(r *mux.Router) {
 	getPredictionsByUser(r)
+	getPredictionsByUserAndChampionshipID(r)
 	insertOrUpdatePrediction(r)
 }

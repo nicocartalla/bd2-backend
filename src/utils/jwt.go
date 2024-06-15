@@ -22,7 +22,7 @@ func init() {
 
 type JwtPayload struct {
 	Email string `json:"email"`
-	Role  string `json:"role"`
+	RoleID  int `json:"role"`
 }
 
 type MyJWTClaims struct {

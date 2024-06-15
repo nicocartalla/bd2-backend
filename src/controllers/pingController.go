@@ -19,7 +19,7 @@ func Ping(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	response := map[string]interface{}{
 		"user": payload.Email,
-		"role": payload.Role,
+		"role_id": payload.RoleID,
 		"message": "pong",
 	}
 

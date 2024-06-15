@@ -20,6 +20,8 @@ func (s *PositionTableService) GetPositionTableByChampionship(championshipID int
 		GROUP BY u.document_id, gm.championship_id
 		ORDER BY points DESC
 	`
+	//show query
+	utils.InfoLogger.Println("Query:", query)
 	rows, err := database.QueryRowsDBParams(query, championshipID)
 	if err != nil {
 		utils.ErrorLogger.Println("Error querying leaderboard by championship:", err)

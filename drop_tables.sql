@@ -1,5 +1,10 @@
 SET FOREIGN_KEY_CHECKS = 0;
 
+TRUNCATE TABLE `User_Championship`;
+
+TRUNCATE TABLE `User`; 
+
+TRUNCATE TABLE `UserRoles`;
 -- Eliminar contenido de la tabla Utils
 TRUNCATE TABLE Utils;
 

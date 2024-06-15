@@ -164,13 +164,6 @@ func InsertMatch(w http.ResponseWriter, r *http.Request) {
 	}
 
 	matchDate, teamLocalID, teamVisitorID, championshipID, stageID, groupSID, err := validateBodyParams(requestBody)
-	//PRINT VARIABLES
-	utils.InfoLogger.Println("MatchDate Controller: ", matchDate)
-	utils.InfoLogger.Println("TeamLocalID Controller: ", teamLocalID)
-	utils.InfoLogger.Println("TeamVisitorID Controller: ", teamVisitorID)
-	utils.InfoLogger.Println("ChampionshipID Controller: ", championshipID)
-	utils.InfoLogger.Println("StageID Controller: ", stageID)
-	utils.InfoLogger.Println("GroupSID Controller: ", groupSID)
 
 	if err != nil {
 		utils.RespondWithError(w, http.StatusBadRequest, "Invalid request body", err)
@@ -190,8 +183,7 @@ func InsertMatch(w http.ResponseWriter, r *http.Request) {
 		StageID: 	    stageID,
 		GroupSID:       groupSID,
 	}
-	// PRINT MATCH
-	utils.InfoLogger.Println("Match Controller: ", match)
+
 	id, err := matchService.InsertMatch(match)
 	if err != nil {
 		utils.RespondWithError(w, http.StatusInternalServerError, "Error creating match", err)

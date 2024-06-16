@@ -15,7 +15,6 @@ type JwtToken struct {
 	Token      string `json:"token"`
 	Expiration time.Time  `json:"expiration"`
 	UserProfile UserProfile `json:"user_profile"`
-	
 }
 
 type UserLogin struct {

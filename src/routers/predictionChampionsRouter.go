@@ -10,7 +10,7 @@ import (
 func getPredictionChampionsByUserAndChampionshipID(r *mux.Router) *mux.Router {
 	a := r.PathPrefix("").Subrouter()
 	a.Use(mux.CORSMethodMiddleware(a))
-	a.HandleFunc("", controllers.GetPredictionChampionshipByUserAndChampionshipID).Methods("GET")
+	a.HandleFunc("", controllers.GetPredictionChampionshipByUserAndChampionshipID).Methods("POST")
 	a.MethodNotAllowedHandler = http.HandlerFunc(MethodNotAllowed)
 	return a
 }

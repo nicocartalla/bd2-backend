@@ -47,7 +47,7 @@ func (u *UserService) ValidateLogin() (bool, error) {
 	if !u.checkUserExists() {
 		return false, fmt.Errorf("user does not exist")
 	}
-	query := fmt.Sprintf("SELECT email, last_name, first_name, major, role_id, password FROM User WHERE email = '%s'", u.User.Email)
+	query := fmt.Sprintf("SELECT document_id, email, last_name, first_name, major, role_id, password FROM User WHERE email = '%s'", u.User.Email)
 	rows, err := database.QueryDB(query)
 	if err != nil {
 		utils.ErrorLogger.Println(err.Error())
@@ -56,7 +56,7 @@ func (u *UserService) ValidateLogin() (bool, error) {
 	var hashFromBD string
 	for rows.Next() {
 		i++
-		err = rows.Scan(&u.User.Email, &u.User.LastName, &u.User.FirstName, &u.User.Major, &u.User.RoleID, &hashFromBD)
+		err = rows.Scan(&u.User.DocumentID, &u.User.Email, &u.User.LastName, &u.User.FirstName, &u.User.Major, &u.User.RoleID, &hashFromBD)
 		if err != nil {
 			utils.ErrorLogger.Println(err.Error())
 		}

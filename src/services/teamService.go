@@ -1,14 +1,14 @@
 package services
 
 import (
-    "fmt"
 	"bd2-backend/src/database"
-    "bd2-backend/src/models"
-    "bd2-backend/src/utils"
+	"bd2-backend/src/models"
+	"bd2-backend/src/utils"
+	"fmt"
 )
 
 type TeamService struct {
-    Team models.Team
+	Team models.Team
 }
 
 func (t *TeamService) CheckTeamExistsByName(teamName string) bool {
@@ -33,14 +33,14 @@ func (t *TeamService) CheckTeamExistsByName(teamName string) bool {
 
 func (r *TeamService) CheckTeamExistsByID(teamID int) (bool, error) {
 	var teamIDDB int
-    query := ("SELECT team_id FROM Teams WHERE team_id = ?")
-    row, err := database.QueryRowDB(query, teamID)
+	query := ("SELECT team_id FROM Teams WHERE team_id = ?")
+	row, err := database.QueryRowDB(query, teamID)
 	row.Scan(&teamIDDB)
 	if err != nil {
 		utils.ErrorLogger.Println("Error checking if team exists: ", err)
 		return false, fmt.Errorf("error checking if team exists: %v", err)
 	}
-    return teamID == teamIDDB, nil
+	return teamID == teamIDDB, nil
 }
 
 func (t *TeamService) GetTeams() ([]models.Team, error) {

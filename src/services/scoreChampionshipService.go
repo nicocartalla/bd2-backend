@@ -8,7 +8,6 @@ import (
 
 type ScoreChampionshipService struct{}
 
-
 func (s *ScoreChampionshipService) InsertOrUpdateScoreChampionship(DocumentID string, championshipID int, points int) error {
 	query := `
 		INSERT INTO ScoresChampionship (document_id, championship_id, points) 
@@ -22,4 +21,3 @@ func (s *ScoreChampionshipService) InsertOrUpdateScoreChampionship(DocumentID st
 	}
 	return nil
 }
-

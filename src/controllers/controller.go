@@ -9,7 +9,6 @@ package controllers
 // 	"strings"
 // )
 
-
 // func validateToken(r *http.Request) (jwt.Claims, error) {
 // 	auth := r.Header.Get("Authorization")
 // 	if auth != "" {
@@ -22,7 +21,6 @@ package controllers
 // 			return jwtToken, nil
 // 		})
 // 		if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-				
 
 // 			}
 // 			return user, nil

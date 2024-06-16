@@ -6,8 +6,6 @@ import (
 	"net/http"
 )
 
-
-
 func getTeams(r *mux.Router) *mux.Router {
 	a := r.PathPrefix("").Subrouter()
 	a.Use(mux.CORSMethodMiddleware(a))

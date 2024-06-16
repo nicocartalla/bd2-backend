@@ -22,25 +22,25 @@ var (
 )
 
 func validateBodyParams(body []byte) (time.Time, int, int, int, *int, *int, error) {
-    var requestBody struct {
-        MatchDate      string `json:"match_date"`
-        TeamLocalID    int    `json:"team_local_id"`
-        TeamVisitorID  int    `json:"team_visitor_id"`
-        ChampionshipID int    `json:"championship_id"`
-        StageID        *int   `json:"stage_id"`
-        GroupSID       *int   `json:"group_s_id"`
-    }
+	var requestBody struct {
+		MatchDate      string `json:"match_date"`
+		TeamLocalID    int    `json:"team_local_id"`
+		TeamVisitorID  int    `json:"team_visitor_id"`
+		ChampionshipID int    `json:"championship_id"`
+		StageID        *int   `json:"stage_id"`
+		GroupSID       *int   `json:"group_s_id"`
+	}
 
-    if err := json.Unmarshal(body, &requestBody); err != nil {
-        return time.Time{}, 0, 0, 0, nil, nil, fmt.Errorf("error decoding request body: %v", err)
-    }
+	if err := json.Unmarshal(body, &requestBody); err != nil {
+		return time.Time{}, 0, 0, 0, nil, nil, fmt.Errorf("error decoding request body: %v", err)
+	}
 
-    matchDate, errMatchDate := time.Parse(time.RFC3339, requestBody.MatchDate)
-    if errMatchDate != nil {
-        return time.Time{}, 0, 0, 0, nil, nil, fmt.Errorf("invalid match_date format: %v", errMatchDate)
-    }
+	matchDate, errMatchDate := time.Parse(time.RFC3339, requestBody.MatchDate)
+	if errMatchDate != nil {
+		return time.Time{}, 0, 0, 0, nil, nil, fmt.Errorf("invalid match_date format: %v", errMatchDate)
+	}
 
-    return matchDate, requestBody.TeamLocalID, requestBody.TeamVisitorID, requestBody.ChampionshipID, requestBody.StageID, requestBody.GroupSID, nil
+	return matchDate, requestBody.TeamLocalID, requestBody.TeamVisitorID, requestBody.ChampionshipID, requestBody.StageID, requestBody.GroupSID, nil
 }
 
 func validateEntities(championshipID, teamLocalID, teamVisitorID int) error {
@@ -66,7 +66,7 @@ func GetAllMatchesByChampionshipID(w http.ResponseWriter, r *http.Request) {
 	if ok, err := championshipService.ValidateChampionship(championship_id); err != nil || !ok {
 		utils.ErrorLogger.Printf("Error validating championship: %d: %v", championship_id, err)
 		utils.RespondWithError(w, http.StatusBadRequest, "Invalid championship_id", err)
-		return 
+		return
 	}
 
 	teams, err := matchService.GetAllMatchesByChampionshipID(championship_id)
@@ -89,7 +89,7 @@ func GetAllPlayedMatchesByChampionshipID(w http.ResponseWriter, r *http.Request)
 	if ok, err := championshipService.ValidateChampionship(championship_id); err != nil || !ok {
 		utils.ErrorLogger.Printf("Error validating championship: %d: %v", championship_id, err)
 		utils.RespondWithError(w, http.StatusBadRequest, "Invalid championship_id", err)
-		return 
+		return
 	}
 
 	teams, err := matchService.GetAllPlayedMatchesByChampionshipID(championship_id)
@@ -112,7 +112,7 @@ func GetNotPlayedMatchesByChampionshipID(w http.ResponseWriter, r *http.Request)
 	if ok, err := championshipService.ValidateChampionship(championship_id); err != nil || !ok {
 		utils.ErrorLogger.Printf("Error validating championship: %d: %v", championship_id, err)
 		utils.RespondWithError(w, http.StatusBadRequest, "Invalid championship_id", err)
-		return 
+		return
 	}
 
 	teams, err := matchService.GetNotPlayedMatchesByChampionshipID(championship_id)
@@ -124,8 +124,6 @@ func GetNotPlayedMatchesByChampionshipID(w http.ResponseWriter, r *http.Request)
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(teams)
 }
-
-
 
 func GetMatchResult(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
@@ -180,7 +178,7 @@ func InsertMatch(w http.ResponseWriter, r *http.Request) {
 		TeamLocalID:    teamLocalID,
 		TeamVisitorID:  teamVisitorID,
 		ChampionshipID: championshipID,
-		StageID: 	    stageID,
+		StageID:        stageID,
 		GroupSID:       groupSID,
 	}
 
@@ -215,8 +213,8 @@ func UpdateMatch(w http.ResponseWriter, r *http.Request) {
 		GoalsLocal     int    `json:"goals_local"`
 		GoalsVisitor   int    `json:"goals_visitor"`
 		ChampionshipID int    `json:"championship_id"`
-		StageID		   int    `json:"stage_id"`
-		GroupSID	   int    `json:"group_s_id"`
+		StageID        int    `json:"stage_id"`
+		GroupSID       int    `json:"group_s_id"`
 	}
 
 	if err := json.Unmarshal(requestBody, &requestParams); err != nil {
@@ -277,7 +275,6 @@ func DeleteMatch(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(responses.Response{Data: "Match deleted successfully with id: " + strconv.Itoa(int(id))})
 }
 
-
 func InsertResult(w http.ResponseWriter, r *http.Request) {
 	var requestBody []byte
 	if r.Body != nil {
@@ -309,7 +306,7 @@ func InsertResult(w http.ResponseWriter, r *http.Request) {
 	utils.InfoLogger.Println("GoalsLocal Controller: ", goalsLocal)
 	utils.InfoLogger.Println("GoalsVisitor Controller: ", goalsVisitor)
 
-	if requestParams.MatchID == nil|| requestParams.GoalsLocal == nil || requestParams.GoalsVisitor == nil {
+	if requestParams.MatchID == nil || requestParams.GoalsLocal == nil || requestParams.GoalsVisitor == nil {
 		utils.RespondWithError(w, http.StatusBadRequest, "Invalid request body", fmt.Errorf("%v %v %v", matchID, goalsLocal, goalsVisitor))
 		return
 	}
@@ -367,12 +364,12 @@ func calculateAndAssignPoints(matchID, goalsLocal, goalsVisitor int) error {
 
 func calculatePoints(predictedLocal, predictedVisitor, actualLocal, actualVisitor int) (int, error) {
 	if predictedLocal == actualLocal && predictedVisitor == actualVisitor {
-		return UtilsService.GetPointsExactResult() 
+		return UtilsService.GetPointsExactResult()
 	} else if (predictedLocal > predictedVisitor && actualLocal > actualVisitor) ||
 		(predictedLocal < predictedVisitor && actualLocal < actualVisitor) ||
 		(predictedLocal == predictedVisitor && actualLocal == actualVisitor) {
-		return UtilsService.GetPointsCorrectResult() 
+		return UtilsService.GetPointsCorrectResult()
 	} else {
-		return 0, nil 
+		return 0, nil
 	}
 }

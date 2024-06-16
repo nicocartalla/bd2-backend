@@ -1,14 +1,13 @@
 package routers
 
 import (
-	"bd2-backend/src/utils"
 	"bd2-backend/src/responses"
+	"bd2-backend/src/utils"
 	"encoding/json"
 	"github.com/gorilla/mux"
 	"net/http"
 	"strings"
 )
-
 
 func Routers() *mux.Router {
 	r := mux.NewRouter().StrictSlash(true)
@@ -34,7 +33,6 @@ func Routers() *mux.Router {
 	r.MethodNotAllowedHandler = http.HandlerFunc(MethodNotAllowed)
 	utils.InfoLogger.Println("CORS enabled")
 
-	
 	SignInRouter(signIn)
 	utils.InfoLogger.Println("Auth router enabled at /api/auth/signin")
 	SignUpRouter(signUp)
@@ -54,7 +52,7 @@ func Routers() *mux.Router {
 	utils.InfoLogger.Println("User router enabled at /api/v1/positiontable")
 	ChampionshipRouter(championship)
 	utils.InfoLogger.Println("User router enabled at /api/v1/championship")
-	
+
 	return r
 }
 
@@ -93,23 +91,22 @@ func middlewareCors(next http.Handler) http.Handler {
 		})
 }
 
-
 func middlewareJwt(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-	  auth_header := r.Header.Get("Authorization")
-	  if !strings.HasPrefix(auth_header, "Bearer") {
-		  http.Error(w, "Not Authorized", http.StatusUnauthorized)
-		  return
-	  }
-	  
-	  tokenString := strings.TrimPrefix(auth_header, "Bearer ")
-	  
-	  claims, err := utils.GetClaimsFromToken(tokenString)
-	  if err != nil {
-		http.Error(w, err.Error(), http.StatusUnauthorized)
-		return
-  }
-	  r = r.WithContext(utils.SetJWTClaimsContext(r.Context(), claims))
-	  next.ServeHTTP(w, r)
-  })
-  }
+		auth_header := r.Header.Get("Authorization")
+		if !strings.HasPrefix(auth_header, "Bearer") {
+			http.Error(w, "Not Authorized", http.StatusUnauthorized)
+			return
+		}
+
+		tokenString := strings.TrimPrefix(auth_header, "Bearer ")
+
+		claims, err := utils.GetClaimsFromToken(tokenString)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusUnauthorized)
+			return
+		}
+		r = r.WithContext(utils.SetJWTClaimsContext(r.Context(), claims))
+		next.ServeHTTP(w, r)
+	})
+}

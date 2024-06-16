@@ -34,7 +34,6 @@ func (s *PredictionChampionshipService) GetPredictionChampionshipByUser(document
 	return predictions, nil
 }
 
-
 func (s *PredictionChampionshipService) InsertPredictionChampionship(prediction models.PredictionChampionship) (int64, error) {
 	query := `
 		INSERT INTO PredictionsChampionships (champion, subchampion, document_id, championship_id)
@@ -42,7 +41,7 @@ func (s *PredictionChampionshipService) InsertPredictionChampionship(prediction 
 		ON DUPLICATE KEY UPDATE
 		champion = VALUES(champion),
 		subchampion = VALUES(subchampion)`
-	
+
 	result, err := database.InsertDBParams(query, prediction.Champion, prediction.SubChampion, prediction.DocumentID, prediction.ChampionshipID)
 	if err != nil {
 		utils.ErrorLogger.Println("Error inserting or updating championship prediction:", err)

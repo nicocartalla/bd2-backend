@@ -10,10 +10,10 @@ type Config struct {
 	JwtKey           string `mapstructure:"JWT_KEY"`
 	DBUri            string `mapstructure:"DB_URI"`
 	AwsS3Bucket      string `mapstructure:"AWS_S3_BUCKET"`
-	AwsS3Hostname      string `mapstructure:"AWS_S3_HOSTNAME"`
+	AwsS3Hostname    string `mapstructure:"AWS_S3_HOSTNAME"`
 	AwsS3AccessKeyId string `mapstructure:"AWS_S3_ACCESS_KEY_ID"`
 	AwsS3SecretKey   string `mapstructure:"AWS_S3_SECRET_KEY"`
-	AwsS3UseSSL   bool `mapstructure:"AWS_S3_USE_SSL"`
+	AwsS3UseSSL      bool   `mapstructure:"AWS_S3_USE_SSL"`
 }
 
 func LoadConfig(path string) (config Config, err error) {

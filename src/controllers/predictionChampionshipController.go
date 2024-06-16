@@ -16,11 +16,10 @@ var (
 	predictionChampionshipService = &services.PredictionChampionshipService{}
 )
 
-
 func GetPredictionChampionshipByUserAndChampionshipID(w http.ResponseWriter, r *http.Request) {
 	var requestBody struct {
-		DocumentID    string `json:"document_id"`
-		ChampionshipID int   `json:"championship_id"`
+		DocumentID     string `json:"document_id"`
+		ChampionshipID int    `json:"championship_id"`
 	}
 
 	if r.Body != nil {
@@ -47,8 +46,6 @@ func GetPredictionChampionshipByUserAndChampionshipID(w http.ResponseWriter, r *
 	json.NewEncoder(w).Encode(predictions)
 }
 
-
-
 func InsertPredictionChampionship(w http.ResponseWriter, r *http.Request) {
 	var requestBody []byte
 	if r.Body != nil {
@@ -62,9 +59,9 @@ func InsertPredictionChampionship(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var requestParams struct {
-		DocumentID   string `json:"document_id"`
-		Champion      *int   `json:"champion"`
-		SubChampion   *int   `json:"subchampion"`
+		DocumentID     string `json:"document_id"`
+		Champion       *int   `json:"champion"`
+		SubChampion    *int   `json:"subchampion"`
 		ChampionshipID *int   `json:"championship_id"`
 	}
 
@@ -112,4 +109,3 @@ func InsertPredictionChampionship(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(responses.Response{Data: "Prediction Championship created successfully with id: " + strconv.Itoa(int(id))})
 	utils.InfoLogger.Println("Prediction Championship created successfully with id: ", id)
 }
-	

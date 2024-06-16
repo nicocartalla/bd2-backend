@@ -9,7 +9,6 @@ import (
 
 type PositionTableService struct{}
 
-
 func (s *PositionTableService) GetPositionTableByChampionship(championshipID int) ([]models.PositionTable, error) {
 	query := `
 		SELECT u.document_id, u.first_name, u.last_name, gm.championship_id, 

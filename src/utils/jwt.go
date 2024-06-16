@@ -1,14 +1,14 @@
 package utils
 
-
 import (
-	"github.com/golang-jwt/jwt/v4"
 	"bd2-backend/src/config"
-	"time"
-	"fmt"
 	"context"
+	"fmt"
+	"github.com/golang-jwt/jwt/v4"
 	"github.com/mitchellh/mapstructure"
+	"time"
 )
+
 var secret []byte
 
 func init() {
@@ -25,32 +25,32 @@ type JwtPayload struct {
 }
 
 type MyJWTClaims struct {
-    *jwt.RegisteredClaims
-    UserInfo interface{}
+	*jwt.RegisteredClaims
+	UserInfo interface{}
 }
 
 func CreateToken(sub string, userInfo interface{}) (string, time.Time, error) {
 	token := jwt.New(jwt.GetSigningMethod("HS256"))
 	exp := time.Now().Add(time.Hour * 1)
 	token.Claims = &MyJWTClaims{
-			&jwt.RegisteredClaims{
+		&jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(exp),
 			Subject:   sub,
 		},
 		userInfo,
-	  }
+	}
 	val, err := token.SignedString(secret)
 	if err != nil {
-		return "",exp, err
+		return "", exp, err
 	}
-	return val,exp, nil
+	return val, exp, nil
 }
 
 func GetClaimsFromToken(tokenString string) (jwt.MapClaims, error) {
-	token, err := jwt.Parse(tokenString, func(token *jwt.Token)   (interface{}, error) {
-			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
-			}
+		}
 		return secret, nil
 	})
 	if err != nil {
@@ -63,12 +63,13 @@ func GetClaimsFromToken(tokenString string) (jwt.MapClaims, error) {
 }
 
 type claimskey int
+
 var claimsKey claimskey
 
 func SetJWTClaimsContext(ctx context.Context, claims jwt.MapClaims) context.Context {
 	return context.WithValue(ctx, claimsKey, claims)
-  }
-  
+}
+
 func jWTClaimsFromContext(ctx context.Context) (jwt.MapClaims, bool) {
 	claims, ok := ctx.Value(claimsKey).(jwt.MapClaims)
 	return claims, ok
@@ -81,11 +82,11 @@ func GetJwtPayloadFromClaim(ctx context.Context) (JwtPayload, error) {
 	}
 
 	userInfo := claims["UserInfo"].(map[string]interface{})
-		var jwtPayload JwtPayload
-		err := mapstructure.Decode(userInfo, &jwtPayload)
-		if err != nil {
-			return *new(JwtPayload), err
-		}
-		return jwtPayload, nil
+	var jwtPayload JwtPayload
+	err := mapstructure.Decode(userInfo, &jwtPayload)
+	if err != nil {
+		return *new(JwtPayload), err
+	}
+	return jwtPayload, nil
 
-} 
+}

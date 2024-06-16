@@ -38,30 +38,31 @@ func GetPredictionsByUser(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(predictions)
 }
 
-/* func GetPredictionsByUserAndChampionshipID(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	documentID := vars["document_id"]
-	championshipID, err := strconv.Atoi(vars["championship_id"])
-	if err != nil {
-		utils.RespondWithError(w, http.StatusBadRequest, "Invalid championship_id", err)
-		return
-	}
+/*
+	 func GetPredictionsByUserAndChampionshipID(w http.ResponseWriter, r *http.Request) {
+		vars := mux.Vars(r)
+		documentID := vars["document_id"]
+		championshipID, err := strconv.Atoi(vars["championship_id"])
+		if err != nil {
+			utils.RespondWithError(w, http.StatusBadRequest, "Invalid championship_id", err)
+			return
+		}
 
-	predictions, err := predictionService.GetPredictionsByUserAndChampionshipID(documentID, championshipID)
-	if err != nil {
-		utils.RespondWithError(w, http.StatusInternalServerError, "Error retrieving predictions", err)
-		return
-	}
+		predictions, err := predictionService.GetPredictionsByUserAndChampionshipID(documentID, championshipID)
+		if err != nil {
+			utils.RespondWithError(w, http.StatusInternalServerError, "Error retrieving predictions", err)
+			return
+		}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(predictions)
-}
- */
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode(predictions)
+	}
+*/
 func GetPredictionsByUserAndChampionshipID(w http.ResponseWriter, r *http.Request) {
 	var requestBody struct {
-		DocumentID    string `json:"document_id"`
-		ChampionshipID int   `json:"championship_id"`
+		DocumentID     string `json:"document_id"`
+		ChampionshipID int    `json:"championship_id"`
 	}
 
 	if r.Body != nil {
@@ -89,8 +90,6 @@ func GetPredictionsByUserAndChampionshipID(w http.ResponseWriter, r *http.Reques
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(predictions)
 }
-
-
 
 func InsertPrediction(w http.ResponseWriter, r *http.Request) {
 	var requestBody []byte
@@ -133,7 +132,6 @@ func InsertPrediction(w http.ResponseWriter, r *http.Request) {
 		utils.RespondWithError(w, http.StatusBadRequest, "User does not exist", fmt.Errorf("%s", prediction.DocumentID))
 		return
 	}
-
 
 	if ok, err := matchService.ValidateMatch(prediction.MatchID); err != nil || !ok {
 		utils.RespondWithError(w, http.StatusBadRequest, "Invalid match_id", fmt.Errorf("%d: %v", prediction.MatchID, err))

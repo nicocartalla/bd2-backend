@@ -14,7 +14,6 @@ func getPositionTableByChampionship(r *mux.Router) *mux.Router {
 	return a
 }
 
-
 func PositionTableRouter(r *mux.Router) {
 	getPositionTableByChampionship(r)
 }

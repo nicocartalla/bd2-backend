@@ -39,8 +39,8 @@ func SignIn(w http.ResponseWriter, r *http.Request) {
 	if okLogin {
 
 		claim := utils.JwtPayload{
-			Email: userService.User.Email,
-			RoleID:  userService.User.RoleID,
+			Email:  userService.User.Email,
+			RoleID: userService.User.RoleID,
 		}
 
 		tokenString, expiration, err := utils.CreateToken(user.DocumentID, claim)
@@ -62,7 +62,7 @@ func SignIn(w http.ResponseWriter, r *http.Request) {
 			FirstName: userService.User.FirstName,
 			LastName:  userService.User.LastName,
 			Major:     userService.User.Major,
-			RoleID:      userService.User.RoleID,
+			RoleID:    userService.User.RoleID,
 		}
 
 		json.NewEncoder(w).Encode(models.JwtToken{Token: tokenString, Expiration: expiration, UserProfile: userProfile})

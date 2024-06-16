@@ -4,9 +4,9 @@ import (
 	"bd2-backend/src/services"
 	"bd2-backend/src/utils"
 	"encoding/json"
-	"net/http"
 	"fmt"
 	"io"
+	"net/http"
 )
 
 var (
@@ -36,9 +36,9 @@ var (
 	json.NewEncoder(w).Encode(positionTable)
 }
 
- */
+*/
 
- func GetPositionTableByChampionship(w http.ResponseWriter, r *http.Request) {
+func GetPositionTableByChampionship(w http.ResponseWriter, r *http.Request) {
 	var requestBody struct {
 		ChampionshipID int `json:"championship_id"`
 	}
@@ -50,10 +50,10 @@ var (
 			utils.RespondWithError(w, http.StatusBadRequest, "Invalid request body", err)
 			return
 		}
-		
+
 		// Log the raw body for debugging
 		utils.InfoLogger.Println("Raw request body: ", string(body))
-		
+
 		// Unmarshal the JSON payload
 		if err := json.Unmarshal(body, &requestBody); err != nil {
 			utils.RespondWithError(w, http.StatusBadRequest, "Error decoding request body", err)
@@ -63,7 +63,6 @@ var (
 		utils.RespondWithError(w, http.StatusBadRequest, "Request body is empty", nil)
 		return
 	}
-	
 
 	championshipID := requestBody.ChampionshipID
 	if championshipID == 0 {

@@ -7,7 +7,6 @@ import (
 	"github.com/gorilla/mux"
 )
 
-
 func getPredictionChampionsByUserAndChampionshipID(r *mux.Router) *mux.Router {
 	a := r.PathPrefix("").Subrouter()
 	a.Use(mux.CORSMethodMiddleware(a))

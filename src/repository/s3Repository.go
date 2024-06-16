@@ -23,7 +23,7 @@ var (
 type s3config struct {
 	accessKey string
 	secretKey string
-	hostname    string
+	hostname  string
 	bucket    string
 	useSSL    bool
 }
@@ -43,8 +43,6 @@ func init() {
 	WarningLogger = log.New(log.Writer(), "WARNING: ", log.Ldate|log.Ltime|log.Lshortfile)
 	ErrorLogger = log.New(log.Writer(), "ERROR: ", log.Ldate|log.Ltime|log.Lshortfile)
 }
-
-
 
 func createConnection() (*minio.Client, error) {
 	client, err := minio.New(envConfig.hostname, &minio.Options{
@@ -69,7 +67,6 @@ func PutFile(fileHandler *multipart.FileHeader, file multipart.File, path string
 	file.Read(buffer)
 	fileBytes := bytes.NewReader(buffer)
 	fileType := http.DetectContentType(buffer)
-
 
 	_, err = client.PutObject(context.Background(), envConfig.bucket, path, fileBytes, size, minio.PutObjectOptions{
 		ContentType: fileType,

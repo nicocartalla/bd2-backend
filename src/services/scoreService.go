@@ -21,4 +21,3 @@ func (s *ScoreService) InsertOrUpdateScore(DocumentID string, matchID int, point
 	}
 	return nil
 }
-

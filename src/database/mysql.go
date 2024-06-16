@@ -1,15 +1,14 @@
 package database
 
 import (
-	"bd2-backend/src/utils"
 	"bd2-backend/src/config"
+	"bd2-backend/src/utils"
 	"database/sql"
 	_ "github.com/go-sql-driver/mysql"
-	
 )
 
 var (
-	dbUri         string
+	dbUri string
 )
 
 func init() {
@@ -47,7 +46,7 @@ func QueryRowDB(query string, parameter any) (*sql.Row, error) {
 	return row, nil
 }
 
-//many rows
+// many rows
 func QueryRowsDBParams(query string, params ...any) (*sql.Rows, error) {
 	db := dBInit()
 	defer db.Close()
@@ -107,4 +106,3 @@ func UpdateDBParams(update string, params ...any) (int64, error) {
 	}
 	return d.RowsAffected()
 }
-

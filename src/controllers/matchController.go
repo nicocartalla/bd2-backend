@@ -21,24 +21,26 @@ var (
 	UtilsService = services.UtilsService{}
 )
 
-func validateBodyParams(body []byte) (time.Time, int, int, int, error) {
-	var requestBody struct {
-		MatchDate      string `json:"match_date"`
-		TeamLocalID    int    `json:"team_local_id"`
-		TeamVisitorID  int    `json:"team_visitor_id"`
-		ChampionshipID int    `json:"championship_id"`
-	}
+func validateBodyParams(body []byte) (time.Time, int, int, int, *int, *int, error) {
+    var requestBody struct {
+        MatchDate      string `json:"match_date"`
+        TeamLocalID    int    `json:"team_local_id"`
+        TeamVisitorID  int    `json:"team_visitor_id"`
+        ChampionshipID int    `json:"championship_id"`
+        StageID        *int   `json:"stage_id"`
+        GroupSID       *int   `json:"group_s_id"`
+    }
 
-	if err := json.Unmarshal(body, &requestBody); err != nil {
-		return time.Time{}, 0, 0, 0, fmt.Errorf("error decoding request body: %v", err)
-	}
+    if err := json.Unmarshal(body, &requestBody); err != nil {
+        return time.Time{}, 0, 0, 0, nil, nil, fmt.Errorf("error decoding request body: %v", err)
+    }
 
-	matchDate, errMatchDate := time.Parse(time.RFC3339, requestBody.MatchDate)
-	if errMatchDate != nil {
-		return time.Time{}, 0, 0, 0, fmt.Errorf("invalid match_date format: %v", errMatchDate)
-	}
+    matchDate, errMatchDate := time.Parse(time.RFC3339, requestBody.MatchDate)
+    if errMatchDate != nil {
+        return time.Time{}, 0, 0, 0, nil, nil, fmt.Errorf("invalid match_date format: %v", errMatchDate)
+    }
 
-	return matchDate, requestBody.TeamLocalID, requestBody.TeamVisitorID, requestBody.ChampionshipID, nil
+    return matchDate, requestBody.TeamLocalID, requestBody.TeamVisitorID, requestBody.ChampionshipID, requestBody.StageID, requestBody.GroupSID, nil
 }
 
 func validateEntities(championshipID, teamLocalID, teamVisitorID int) error {
@@ -161,7 +163,8 @@ func InsertMatch(w http.ResponseWriter, r *http.Request) {
 		requestBody = body
 	}
 
-	matchDate, teamLocalID, teamVisitorID, championshipID, err := validateBodyParams(requestBody)
+	matchDate, teamLocalID, teamVisitorID, championshipID, stageID, groupSID, err := validateBodyParams(requestBody)
+
 	if err != nil {
 		utils.RespondWithError(w, http.StatusBadRequest, "Invalid request body", err)
 		return
@@ -177,6 +180,8 @@ func InsertMatch(w http.ResponseWriter, r *http.Request) {
 		TeamLocalID:    teamLocalID,
 		TeamVisitorID:  teamVisitorID,
 		ChampionshipID: championshipID,
+		StageID: 	    stageID,
+		GroupSID:       groupSID,
 	}
 
 	id, err := matchService.InsertMatch(match)
@@ -210,6 +215,8 @@ func UpdateMatch(w http.ResponseWriter, r *http.Request) {
 		GoalsLocal     int    `json:"goals_local"`
 		GoalsVisitor   int    `json:"goals_visitor"`
 		ChampionshipID int    `json:"championship_id"`
+		StageID		   int    `json:"stage_id"`
+		GroupSID	   int    `json:"group_s_id"`
 	}
 
 	if err := json.Unmarshal(requestBody, &requestParams); err != nil {
@@ -223,23 +230,21 @@ func UpdateMatch(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	matchID := requestParams.MatchID
-	goalsLocal := requestParams.GoalsLocal
-	goalsVisitor := requestParams.GoalsVisitor
-
 	if err := validateEntities(requestParams.ChampionshipID, requestParams.TeamLocalID, requestParams.TeamVisitorID); err != nil {
 		utils.RespondWithError(w, http.StatusBadRequest, err.Error(), err)
 		return
 	}
 
 	match := models.Match{
-		MatchID:        matchID,
+		MatchID:        requestParams.MatchID,
 		MatchDate:      matchDate,
 		TeamLocalID:    requestParams.TeamLocalID,
 		TeamVisitorID:  requestParams.TeamVisitorID,
 		ChampionshipID: requestParams.ChampionshipID,
-		GoalsLocal:     &goalsLocal,
-		GoalsVisitor:   &goalsVisitor,
+		GoalsLocal:     &requestParams.GoalsLocal,
+		GoalsVisitor:   &requestParams.GoalsVisitor,
+		StageID:        &requestParams.StageID,
+		GroupSID:       &requestParams.GroupSID,
 	}
 
 	id, err := matchService.UpdateMatch(match)
@@ -254,22 +259,24 @@ func UpdateMatch(w http.ResponseWriter, r *http.Request) {
 }
 
 func DeleteMatch(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	matchID, err := strconv.Atoi(vars["match_id"])
-	if err != nil {
-		utils.RespondWithError(w, http.StatusBadRequest, "Invalid match_id", err)
+	var request struct {
+		MatchID int `json:"match_id"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+		utils.RespondWithError(w, http.StatusBadRequest, "Invalid request body", err)
 		return
 	}
-
-	id, err := matchService.DeleteMatch(matchID)
+	id, err := matchService.DeleteMatch(request.MatchID)
 	if err != nil {
 		utils.RespondWithError(w, http.StatusInternalServerError, "Error deleting match", err)
 		return
 	}
+
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(responses.Response{Data: "Match deleted successfully with id: " + strconv.Itoa(int(id))})
 }
+
 
 func InsertResult(w http.ResponseWriter, r *http.Request) {
 	var requestBody []byte

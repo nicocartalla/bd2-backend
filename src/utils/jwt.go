@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"context"
 	"github.com/mitchellh/mapstructure"
-
 )
 var secret []byte
 
@@ -21,8 +20,8 @@ func init() {
 }
 
 type JwtPayload struct {
-	Email string `json:"email"`
-	Role  string `json:"role"`
+	Email  string `json:"email" mapstructure:"email"`
+	RoleID int    `json:"role_id" mapstructure:"role_id"`
 }
 
 type MyJWTClaims struct {
@@ -89,4 +88,4 @@ func GetJwtPayloadFromClaim(ctx context.Context) (JwtPayload, error) {
 		}
 		return jwtPayload, nil
 
-}
+} 

@@ -8,14 +8,13 @@ type UserProfile struct {
 	FirstName string `json:"first_name"`
 	LastName string `json:"last_name"`
 	Major string `json:"major"`
-	Role string `json:"role"`
+	RoleID int `json:"role_id"`
 }
 
 type JwtToken struct {
 	Token      string `json:"token"`
 	Expiration time.Time  `json:"expiration"`
 	UserProfile UserProfile `json:"user_profile"`
-	
 }
 
 type UserLogin struct {

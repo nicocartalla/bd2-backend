@@ -97,3 +97,14 @@ func UpdateDB(update string) (int64, error) {
 	}
 	return d.RowsAffected()
 }
+
+func UpdateDBParams(update string, params ...any) (int64, error) {
+	db := dBInit()
+	defer db.Close()
+	d, err := db.Exec(update, params...)
+	if err != nil {
+		return 0, err
+	}
+	return d.RowsAffected()
+}
+

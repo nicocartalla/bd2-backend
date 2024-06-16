@@ -36,7 +36,7 @@ func GetPredictionChampionshipByUserAndChampionshipID(w http.ResponseWriter, r *
 		}
 	}
 
-	predictions, err := predictionService.GetPredictionsByUserAndChampionshipID(requestBody.DocumentID, requestBody.ChampionshipID)
+	predictions, err := predictionChampionshipService.GetPredictionChampionshipByUser(requestBody.DocumentID, requestBody.ChampionshipID)
 	if err != nil {
 		utils.RespondWithError(w, http.StatusInternalServerError, "Error retrieving predictions", err)
 		return
@@ -93,6 +93,11 @@ func InsertPredictionChampionship(w http.ResponseWriter, r *http.Request) {
 
 	if ok, err := championshipService.ValidateChampionship(predictionChampionship.ChampionshipID); err != nil || !ok {
 		utils.RespondWithError(w, http.StatusBadRequest, "Invalid championship_id", fmt.Errorf("%d: %v", predictionChampionship.ChampionshipID, err))
+		return
+	}
+
+	if predictionChampionship.Champion == predictionChampionship.SubChampion {
+		utils.RespondWithError(w, http.StatusBadRequest, "Champion and Subchampion can't be the same", nil)
 		return
 	}
 

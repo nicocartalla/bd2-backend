@@ -215,6 +215,8 @@ func UpdateMatch(w http.ResponseWriter, r *http.Request) {
 		GoalsLocal     int    `json:"goals_local"`
 		GoalsVisitor   int    `json:"goals_visitor"`
 		ChampionshipID int    `json:"championship_id"`
+		StageID		   int    `json:"stage_id"`
+		GroupSID	   int    `json:"group_s_id"`
 	}
 
 	if err := json.Unmarshal(requestBody, &requestParams); err != nil {
@@ -228,23 +230,21 @@ func UpdateMatch(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	matchID := requestParams.MatchID
-	goalsLocal := requestParams.GoalsLocal
-	goalsVisitor := requestParams.GoalsVisitor
-
 	if err := validateEntities(requestParams.ChampionshipID, requestParams.TeamLocalID, requestParams.TeamVisitorID); err != nil {
 		utils.RespondWithError(w, http.StatusBadRequest, err.Error(), err)
 		return
 	}
 
 	match := models.Match{
-		MatchID:        matchID,
+		MatchID:        requestParams.MatchID,
 		MatchDate:      matchDate,
 		TeamLocalID:    requestParams.TeamLocalID,
 		TeamVisitorID:  requestParams.TeamVisitorID,
 		ChampionshipID: requestParams.ChampionshipID,
-		GoalsLocal:     &goalsLocal,
-		GoalsVisitor:   &goalsVisitor,
+		GoalsLocal:     &requestParams.GoalsLocal,
+		GoalsVisitor:   &requestParams.GoalsVisitor,
+		StageID:        &requestParams.StageID,
+		GroupSID:       &requestParams.GroupSID,
 	}
 
 	id, err := matchService.UpdateMatch(match)
@@ -259,22 +259,24 @@ func UpdateMatch(w http.ResponseWriter, r *http.Request) {
 }
 
 func DeleteMatch(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	matchID, err := strconv.Atoi(vars["match_id"])
-	if err != nil {
-		utils.RespondWithError(w, http.StatusBadRequest, "Invalid match_id", err)
+	var request struct {
+		MatchID int `json:"match_id"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+		utils.RespondWithError(w, http.StatusBadRequest, "Invalid request body", err)
 		return
 	}
-
-	id, err := matchService.DeleteMatch(matchID)
+	id, err := matchService.DeleteMatch(request.MatchID)
 	if err != nil {
 		utils.RespondWithError(w, http.StatusInternalServerError, "Error deleting match", err)
 		return
 	}
+
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(responses.Response{Data: "Match deleted successfully with id: " + strconv.Itoa(int(id))})
 }
+
 
 func InsertResult(w http.ResponseWriter, r *http.Request) {
 	var requestBody []byte

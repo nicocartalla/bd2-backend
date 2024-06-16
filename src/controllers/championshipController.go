@@ -48,11 +48,31 @@ func GetChampionshipByID(w http.ResponseWriter, r *http.Request) {
 }
 
 func CreateChampionship(w http.ResponseWriter, r *http.Request) {
-    var championship models.Championship
-    err := json.NewDecoder(r.Body).Decode(&championship)
-    if err != nil {
-        utils.RespondWithError(w, http.StatusBadRequest, "Invalid request payload", err)
-        return
+	var requestBody struct {
+		Name             string `json:"name"`
+        Year             int    `json:"year"`
+        Country          string `json:"country"`
+        ChampionshipType string `json:"championship_type"`
+    }                       
+
+	if r.Body != nil {
+		defer r.Body.Close()
+		body, err := io.ReadAll(r.Body)
+		if err != nil {
+			utils.RespondWithError(w, http.StatusBadRequest, "Invalid request body", err)
+			return
+		}
+		if err := json.Unmarshal(body, &requestBody); err != nil {
+			utils.RespondWithError(w, http.StatusBadRequest, "Error decoding request body", err)
+			return
+		}
+	}
+
+    championship := models.Championship{
+        Name:             requestBody.Name,
+        Year:             requestBody.Year,
+        Country:          requestBody.Country,
+        ChampionshipType: requestBody.ChampionshipType,
     }
 
     id, err := championshipService.CreateChampionship(championship)
@@ -133,6 +153,11 @@ func SetChampionshipChampions(w http.ResponseWriter, r *http.Request) {
 
     if ok, err := championshipService.ValidateChampionship(requestBody.ChampionshipID); err != nil || !ok {
         utils.RespondWithError(w, http.StatusBadRequest, "Invalid championship_id", fmt.Errorf("%d: %v", requestBody.ChampionshipID, err))
+        return
+    }
+
+    if requestBody.ChampionID == requestBody.SubChampionID {
+        utils.RespondWithError(w, http.StatusBadRequest, "Champion and subchampion must be different", fmt.Errorf("champion_id: %d, sub_champion_id: %d", requestBody.ChampionID, requestBody.SubChampionID))
         return
     }
 

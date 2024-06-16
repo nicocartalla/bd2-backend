@@ -11,11 +11,11 @@ type PredictionChampionshipService struct {
 	Prediction models.PredictionChampionship
 }
 
-func (s *PredictionChampionshipService) GetPredictionChampionshipByUser(userID int, championshipID int) ([]models.PredictionChampionship, error) {
+func (s *PredictionChampionshipService) GetPredictionChampionshipByUser(documentID string, championshipID int) ([]models.PredictionChampionship, error) {
 	query := `SELECT prediction_c_id, document_id, championship_id, champion, subchampion 
               FROM PredictionsChampionships 
               WHERE document_id = ? AND championship_id = ?`
-	rows, err := database.QueryRowsDBParams(query, userID, championshipID)
+	rows, err := database.QueryRowsDBParams(query, documentID, championshipID)
 	if err != nil {
 		utils.ErrorLogger.Println("Error querying predictions by user and championship:", err)
 		return nil, fmt.Errorf("error querying predictions by user and championship: %v", err)

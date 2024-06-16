@@ -10,7 +10,7 @@ import (
 
 
 func getAllMatchesByChampionshipID(r *mux.Router) *mux.Router {
-	a := r.PathPrefix("/allmatches").Subrouter()
+	a := r.PathPrefix("/all").Subrouter()
 	a.Use(mux.CORSMethodMiddleware(a))
 	a.HandleFunc("/{championship_id}", controllers.GetAllMatchesByChampionshipID).Methods("GET")
 	a.MethodNotAllowedHandler = http.HandlerFunc(MethodNotAllowed)

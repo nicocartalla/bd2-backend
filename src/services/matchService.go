@@ -98,7 +98,7 @@ func (r *MatchService) GetNotPlayedMatchesByChampionshipID(championshipID int) (
 func (r *MatchService) GetMatchResult(matchID int) (models.Match, error) {
     var result models.Match
 
-    query := "SELECT match_id, match_date, team_local_id, team_local_id, goals_local, goals_visitor, championship_id FROM GameMatch WHERE match_id = ?"
+    query := "SELECT * FROM GameMatch WHERE match_id = ?"
     row, err := database.QueryRowDB(query, matchID)
     if err != nil {
         utils.ErrorLogger.Println("Error getting result: ", err)
@@ -130,13 +130,17 @@ func (r *MatchService) InsertMatch(match models.Match) (int64, error) {
 }
 
 func (r *MatchService) UpdateMatch(match models.Match) (int64, error) {
-    query := fmt.Sprintf("UPDATE GameMatch SET match_date = '%s', team_local_id = %d, team_visitor_id = %d, championship_id = %d WHERE match_id = %d", match.MatchDate, match.TeamLocalID, match.TeamVisitorID, match.ChampionshipID, match.MatchID)
-    id, err := database.InsertDB(query)
+    query := `
+        UPDATE GameMatch
+        SET match_date = ?, team_local_id = ?, team_visitor_id = ?, championship_id = ?, stage_id = ?, group_s_id = ?, goals_local = ?, goals_visitor = ?
+        WHERE match_id = ?`
+
+    result , err := database.UpdateDBParams(query, match.MatchDate, match.TeamLocalID, match.TeamVisitorID, match.ChampionshipID, match.StageID, match.GroupSID, match.GoalsLocal, match.GoalsVisitor, match.MatchID)
     if err != nil {
         utils.ErrorLogger.Println("Error updating match: ", err)
-        return 0, fmt.Errorf("error updating match: %v", err)
+        return 0, fmt.Errorf("error updating match: %d , %v", result, err)
     }
-    return id, nil
+    return int64(match.MatchID), nil
 }
 
 func (r *MatchService) DeleteMatch(matchID int) (int64, error) {
@@ -144,9 +148,9 @@ func (r *MatchService) DeleteMatch(matchID int) (int64, error) {
     id, err := database.InsertDB(query)
     if err != nil {
         utils.ErrorLogger.Println("Error deleting match: ", err)
-        return 0, fmt.Errorf("error deleting match: %v", err)
+        return 0, fmt.Errorf("error deleting match: %v , %d" , err, id)
     }
-    return id, nil
+    return int64(matchID), nil
 }
 
 func (r *MatchService) InsertResult(match models.Match) (int, error) {

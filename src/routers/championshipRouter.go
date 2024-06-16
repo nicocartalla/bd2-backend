@@ -8,7 +8,7 @@ import (
 )
 
 func getAllChampionships(r *mux.Router) *mux.Router {
-    a := r.PathPrefix("").Subrouter()
+    a := r.PathPrefix("/all").Subrouter()
     a.Use(mux.CORSMethodMiddleware(a))
     a.HandleFunc("", controllers.GetAllChampionships).Methods("GET")
     a.MethodNotAllowedHandler = http.HandlerFunc(MethodNotAllowed)
@@ -24,7 +24,7 @@ func getChampionshipByID(r *mux.Router) *mux.Router {
 }
 
 func createChampionship(r *mux.Router) *mux.Router {
-    a := r.PathPrefix("").Subrouter()
+    a := r.PathPrefix("/create").Subrouter()
     a.Use(mux.CORSMethodMiddleware(a))
     a.HandleFunc("", controllers.CreateChampionship).Methods("POST")
     a.MethodNotAllowedHandler = http.HandlerFunc(MethodNotAllowed)
@@ -32,17 +32,17 @@ func createChampionship(r *mux.Router) *mux.Router {
 }
 
 func updateChampionship(r *mux.Router) *mux.Router {
-    a := r.PathPrefix("/{id}").Subrouter()
+    a := r.PathPrefix("/update").Subrouter()
     a.Use(mux.CORSMethodMiddleware(a))
-    a.HandleFunc("", controllers.UpdateChampionship).Methods("PUT")
+    a.HandleFunc("/{id}", controllers.UpdateChampionship).Methods("PUT")
     a.MethodNotAllowedHandler = http.HandlerFunc(MethodNotAllowed)
     return a
 }
 
 func deleteChampionship(r *mux.Router) *mux.Router {
-    a := r.PathPrefix("/{id}").Subrouter()
+    a := r.PathPrefix("/delete").Subrouter()
     a.Use(mux.CORSMethodMiddleware(a))
-    a.HandleFunc("", controllers.DeleteChampionship).Methods("DELETE")
+    a.HandleFunc("/{id}", controllers.DeleteChampionship).Methods("DELETE")
     a.MethodNotAllowedHandler = http.HandlerFunc(MethodNotAllowed)
     return a
 }
@@ -56,10 +56,10 @@ func setChampionshipChampions(r *mux.Router) *mux.Router {
 }
 
 func ChampionshipRouter(r *mux.Router) {
-    getAllChampionships(r)
-    getChampionshipByID(r)
     createChampionship(r)
+    setChampionshipChampions(r)
+    getAllChampionships(r)
     updateChampionship(r)
     deleteChampionship(r)
-    setChampionshipChampions(r)
+    getChampionshipByID(r)
 }

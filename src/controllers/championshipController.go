@@ -48,6 +48,12 @@ func GetChampionshipByID(w http.ResponseWriter, r *http.Request) {
 }
 
 func CreateChampionship(w http.ResponseWriter, r *http.Request) {
+
+	//validate if user is admin
+	if ok := ValidateAdminUser(w, r); !ok {
+		return
+	}
+
 	var requestBody struct {
 		Name             string `json:"name"`
 		Year             int    `json:"year"`
@@ -87,6 +93,12 @@ func CreateChampionship(w http.ResponseWriter, r *http.Request) {
 }
 
 func UpdateChampionship(w http.ResponseWriter, r *http.Request) {
+
+	//validate if user is admin
+	if ok := ValidateAdminUser(w, r); !ok {
+		return
+	}
+
 	vars := mux.Vars(r)
 	id, err := strconv.Atoi(vars["id"])
 	if err != nil {
@@ -113,6 +125,12 @@ func UpdateChampionship(w http.ResponseWriter, r *http.Request) {
 }
 
 func DeleteChampionship(w http.ResponseWriter, r *http.Request) {
+
+	//validate if user is admin
+	if ok := ValidateAdminUser(w, r); !ok {
+		return
+	}
+
 	vars := mux.Vars(r)
 	id, err := strconv.Atoi(vars["id"])
 	if err != nil {
@@ -133,6 +151,12 @@ func DeleteChampionship(w http.ResponseWriter, r *http.Request) {
 
 // funcion para setear el championship y los champions, recibe en el body el champio y el sub_champion y el championhip_id
 func SetChampionshipChampions(w http.ResponseWriter, r *http.Request) {
+
+	//validate if user is admin
+	if ok := ValidateAdminUser(w, r); !ok {
+		return
+	}
+
 	var requestBody struct {
 		ChampionID     int `json:"champion_id"`
 		SubChampionID  int `json:"sub_champion_id"`

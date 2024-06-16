@@ -150,6 +150,12 @@ func GetMatchResult(w http.ResponseWriter, r *http.Request) {
 }
 
 func InsertMatch(w http.ResponseWriter, r *http.Request) {
+
+	//validate if user is admin
+	if ok := ValidateAdminUser(w, r); !ok {
+		return
+	}
+
 	var requestBody []byte
 	if r.Body != nil {
 		defer r.Body.Close()
@@ -194,6 +200,12 @@ func InsertMatch(w http.ResponseWriter, r *http.Request) {
 }
 
 func UpdateMatch(w http.ResponseWriter, r *http.Request) {
+
+	//validate if user is admin
+	if ok := ValidateAdminUser(w, r); !ok {
+		return
+	}
+
 	var requestBody []byte
 	if r.Body != nil {
 		defer r.Body.Close()
@@ -257,6 +269,12 @@ func UpdateMatch(w http.ResponseWriter, r *http.Request) {
 }
 
 func DeleteMatch(w http.ResponseWriter, r *http.Request) {
+
+	//validate if user is admin
+	if ok := ValidateAdminUser(w, r); !ok {
+		return
+	}
+
 	var request struct {
 		MatchID int `json:"match_id"`
 	}
@@ -276,6 +294,12 @@ func DeleteMatch(w http.ResponseWriter, r *http.Request) {
 }
 
 func InsertResult(w http.ResponseWriter, r *http.Request) {
+
+	//validate if user is admin
+	if ok := ValidateAdminUser(w, r); !ok {
+		return
+	}
+	
 	var requestBody []byte
 	if r.Body != nil {
 		defer r.Body.Close()

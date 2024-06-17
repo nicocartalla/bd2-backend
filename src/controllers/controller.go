@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"bd2-backend/src/utils"
+	"bd2-backend/src/services"
 	"net/http"
 )
 
@@ -13,7 +14,13 @@ func ValidateAdminUser(w http.ResponseWriter, r *http.Request) (bool) {
 		utils.RespondWithError(w, http.StatusInternalServerError, "Error getting claims from context", err)
 	}
 
-	if payload.RoleID == 1 {
+	roleService := services.RoleService{}
+	roleData, err := roleService.GetRoleId("Admin")
+	if err != nil {
+		utils.RespondWithError(w, http.StatusInternalServerError, "Error getting role id", err)
+		return false
+	}
+	if payload.RoleID == roleData.ID {
 		return true
 	}
 

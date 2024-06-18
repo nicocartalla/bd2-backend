@@ -14,4 +14,6 @@ type Match struct {
 	ChampionshipID int       `json:"championship_id"`
 	StageID        *int      `json:"stage_id"`
 	GroupSID       *int      `json:"group_s_id"`
+	GroupName	   *string   `json:"group_name"`
+	StageName      *string   `json:"stage_name"`
 }

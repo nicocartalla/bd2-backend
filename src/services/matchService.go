@@ -33,11 +33,11 @@ func (r *MatchService) GetAllMatchesByChampionshipID(championshipID int) ([]mode
 		Stages.stage_name, 
 		GroupStages.group_s_name 
 	FROM 
-		GameMatch 
-	JOIN 
-		Stages ON GameMatch.stage_id = Stages.stage_id 
-	JOIN 
-		GroupStages ON GameMatch.championship_id = GroupStages.championship_id
+		GameMatch
+	LEFT JOIN 
+		Stages ON GameMatch.stage_id = Stages.stage_id
+	LEFT JOIN 
+		GroupStages ON GameMatch.group_s_id = GroupStages.group_s_id
 	WHERE 
 		GameMatch.championship_id = ? 
 	ORDER BY 
@@ -66,21 +66,22 @@ func (r *MatchService) GetAllMatchesByChampionshipID(championshipID int) ([]mode
 func (r *MatchService) GetAllPlayedMatchesByChampionshipID(championshipID int) ([]models.Match, error) {
 	query := `
 	SELECT 
-		GameMatch.*, 
+		GameMatch.*,
 		Stages.stage_name, 
 		GroupStages.group_s_name 
 	FROM 
-		GameMatch 
-	JOIN 
-		Stages ON GameMatch.stage_id = Stages.stage_id 
-	JOIN 
-		GroupStages ON GameMatch.championship_id = GroupStages.championship_id
+		GameMatch
+	LEFT JOIN 
+		Stages ON GameMatch.stage_id = Stages.stage_id
+	LEFT JOIN 
+		GroupStages ON GameMatch.group_s_id = GroupStages.group_s_id
 	WHERE 
-		GameMatch.championship_id = ? 
-		AND goals_local IS NOT NULL 
-		AND goals_visitor IS NOT NULL 
+		GameMatch.championship_id = ?
+		AND GameMatch.goals_local IS NOT NULL 
+		AND GameMatch.goals_visitor IS NOT NULL
 	ORDER BY 
-		match_date ASC`
+		GameMatch.match_date ASC;
+`
 
 	rows, err := database.QueryRowsDBParams(query, championshipID)
 	if err != nil {
@@ -110,10 +111,10 @@ func (r *MatchService) GetNotPlayedMatchesByChampionshipID(championshipID int) (
 		GroupStages.group_s_name 
 	FROM 
 		GameMatch 
-	JOIN 
-		Stages ON GameMatch.stage_id = Stages.stage_id 
-	JOIN 
-		GroupStages ON GameMatch.championship_id = GroupStages.championship_id
+	LEFT JOIN 
+		Stages ON GameMatch.stage_id = Stages.stage_id
+	LEFT JOIN 
+		GroupStages ON GameMatch.group_s_id = GroupStages.group_s_id
 	WHERE 
 		GameMatch.championship_id = ? 
 		AND match_date > NOW() + INTERVAL (SELECT hours_until_match FROM Utils) HOUR 
@@ -152,9 +153,9 @@ func (r *MatchService) GetMatchResult(matchID int) (models.Match, error) {
 	FROM 
 		GameMatch 
 	JOIN 
-		Stages ON GameMatch.stage_id = Stages.stage_id 
+		Stages ON GameMatch.stage_id = Stages.stage_id
 	JOIN 
-		GroupStages ON GameMatch.championship_id = GroupStages.championship_id
+		GroupStages ON GameMatch.group_s_id = GroupStages.group_s_id
 	WHERE 
 		GameMatch.match_id = ?`
 		

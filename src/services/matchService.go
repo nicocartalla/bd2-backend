@@ -37,7 +37,7 @@ func (r *MatchService) GetAllMatchesByChampionshipID(championshipID int) ([]mode
 	JOIN 
 		Stages ON GameMatch.stage_id = Stages.stage_id 
 	JOIN 
-		GroupStages ON GameMatch.group_s_id = GroupStages.group_s_id 
+		GroupStages ON GameMatch.championship_id = GroupStages.championship_id
 	WHERE 
 		GameMatch.championship_id = ? 
 	ORDER BY 
@@ -74,7 +74,7 @@ func (r *MatchService) GetAllPlayedMatchesByChampionshipID(championshipID int) (
 	JOIN 
 		Stages ON GameMatch.stage_id = Stages.stage_id 
 	JOIN 
-		GroupStages ON GameMatch.group_s_id = GroupStages.group_s_id 
+		GroupStages ON GameMatch.championship_id = GroupStages.championship_id
 	WHERE 
 		GameMatch.championship_id = ? 
 		AND goals_local IS NOT NULL 
@@ -113,7 +113,7 @@ func (r *MatchService) GetNotPlayedMatchesByChampionshipID(championshipID int) (
 	JOIN 
 		Stages ON GameMatch.stage_id = Stages.stage_id 
 	JOIN 
-		GroupStages ON GameMatch.group_s_id = GroupStages.group_s_id 
+		GroupStages ON GameMatch.championship_id = GroupStages.championship_id
 	WHERE 
 		GameMatch.championship_id = ? 
 		AND match_date > NOW() + INTERVAL (SELECT hours_until_match FROM Utils) HOUR 
@@ -154,7 +154,7 @@ func (r *MatchService) GetMatchResult(matchID int) (models.Match, error) {
 	JOIN 
 		Stages ON GameMatch.stage_id = Stages.stage_id 
 	JOIN 
-		GroupStages ON GameMatch.group_s_id = GroupStages.group_s_id 
+		GroupStages ON GameMatch.championship_id = GroupStages.championship_id
 	WHERE 
 		GameMatch.match_id = ?`
 		

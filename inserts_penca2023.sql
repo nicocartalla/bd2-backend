@@ -107,6 +107,29 @@ INSERT INTO GameMatch (match_date, team_local_id, team_visitor_id, goals_local, 
 ('2023-07-02 20:00:00', 12, 7, NULL, NULL, 1, 1, 4), -- Costa Rica vs Paraguay
 ('2023-07-02 20:00:00', 3, 5, NULL, NULL, 1, 1, 4); -- Brazil vs Colombia
 
+
+-- Partidos de cuartos de final
+INSERT INTO GameMatch (match_date, team_local_id, team_visitor_id, goals_local, goals_visitor, championship_id, stage_id, group_s_id) VALUES
+('2023-07-05 17:00:00', 1, 14, 3, 1, 1, 2, NULL), -- Argentina vs Jamaica
+('2023-07-05 20:00:00', 15, 11, 2, 1, 1, 2, NULL), -- Mexico vs Canada
+('2023-07-06 17:00:00', 9, 5, 2, 1, 1, 2, NULL), -- Uruguay vs Colombia
+('2023-07-06 20:00:00', 3, 13, 2, 0, 1, 2, NULL); -- Brazil vs United States
+
+-- Partidos de semifinales
+INSERT INTO GameMatch (match_date, team_local_id, team_visitor_id, goals_local, goals_visitor, championship_id, stage_id, group_s_id) VALUES
+('2023-07-09 17:00:00', 1, 9, 1, 2, 1, 3, NULL), -- Argentina vs Uruguay
+('2023-07-09 20:00:00', 15, 3, 1, 2, 1, 3, NULL); -- Mexico vs Brazil
+
+-- Partido por el Tercer Lugar
+INSERT INTO GameMatch (match_date, team_local_id, team_visitor_id, goals_local, goals_visitor, championship_id, stage_id, group_s_id) VALUES
+('2023-07-11 17:00:00', 1, 15, 2, 1, 1, 4, NULL); -- Argentina vs Mexico
+
+-- Final
+INSERT INTO GameMatch (match_date, team_local_id, team_visitor_id, goals_local, goals_visitor, championship_id, stage_id, group_s_id) VALUES
+('2023-07-12 17:00:00', 9, 3, 2, 1, 1, 4, NULL); -- Uruguay vs Brazil
+
+
+
 -- Inserción de predicciones de partidos
 INSERT INTO Predictions (goals_local, goals_visitor, document_id, match_id) VALUES
 (2, 0, '11111111', 1),  -- Nacho predice Argentina vs Canada

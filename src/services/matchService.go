@@ -27,7 +27,22 @@ func (r *MatchService) ValidateMatch(matchID int) (bool, error) {
 }
 
 func (r *MatchService) GetAllMatchesByChampionshipID(championshipID int) ([]models.Match, error) {
-	query := "SELECT * FROM GameMatch WHERE championship_id = ? ORDER BY match_date ASC"
+	query := `
+	SELECT 
+		GameMatch.*, 
+		Stages.stage_name, 
+		GroupStages.group_s_name 
+	FROM 
+		GameMatch
+	LEFT JOIN 
+		Stages ON GameMatch.stage_id = Stages.stage_id
+	LEFT JOIN 
+		GroupStages ON GameMatch.group_s_id = GroupStages.group_s_id
+	WHERE 
+		GameMatch.championship_id = ? 
+	ORDER BY 
+		match_date ASC`
+
 	rows, err := database.QueryRowsDBParams(query, championshipID)
 	if err != nil {
 		utils.ErrorLogger.Println("Error getting results: ", err)
@@ -38,7 +53,7 @@ func (r *MatchService) GetAllMatchesByChampionshipID(championshipID int) ([]mode
 	var results []models.Match
 	for rows.Next() {
 		var result models.Match
-		err = rows.Scan(&result.MatchID, &result.MatchDate, &result.TeamLocalID, &result.TeamVisitorID, &result.GoalsLocal, &result.GoalsVisitor, &result.ChampionshipID, &result.StageID, &result.GroupSID)
+		err = rows.Scan(&result.MatchID, &result.MatchDate, &result.TeamLocalID, &result.TeamVisitorID, &result.GoalsLocal, &result.GoalsVisitor, &result.ChampionshipID, &result.StageID, &result.GroupSID, &result.StageName, &result.GroupName)
 		if err != nil {
 			utils.ErrorLogger.Println("Error scanning result: ", err)
 			return nil, fmt.Errorf("error scanning result: %v", err)
@@ -49,7 +64,25 @@ func (r *MatchService) GetAllMatchesByChampionshipID(championshipID int) ([]mode
 }
 
 func (r *MatchService) GetAllPlayedMatchesByChampionshipID(championshipID int) ([]models.Match, error) {
-	query := "SELECT * FROM GameMatch WHERE championship_id = ? AND goals_local IS NOT NULL AND goals_visitor IS NOT NULL ORDER BY match_date ASC"
+	query := `
+	SELECT 
+		GameMatch.*,
+		Stages.stage_name, 
+		GroupStages.group_s_name 
+	FROM 
+		GameMatch
+	LEFT JOIN 
+		Stages ON GameMatch.stage_id = Stages.stage_id
+	LEFT JOIN 
+		GroupStages ON GameMatch.group_s_id = GroupStages.group_s_id
+	WHERE 
+		GameMatch.championship_id = ?
+		AND GameMatch.goals_local IS NOT NULL 
+		AND GameMatch.goals_visitor IS NOT NULL
+	ORDER BY 
+		GameMatch.match_date ASC;
+`
+
 	rows, err := database.QueryRowsDBParams(query, championshipID)
 	if err != nil {
 		utils.ErrorLogger.Println("Error getting results: ", err)
@@ -60,7 +93,7 @@ func (r *MatchService) GetAllPlayedMatchesByChampionshipID(championshipID int) (
 	var results []models.Match
 	for rows.Next() {
 		var result models.Match
-		err = rows.Scan(&result.MatchID, &result.MatchDate, &result.TeamLocalID, &result.TeamVisitorID, &result.GoalsLocal, &result.GoalsVisitor, &result.ChampionshipID, &result.StageID, &result.GroupSID)
+		err = rows.Scan(&result.MatchID, &result.MatchDate, &result.TeamLocalID, &result.TeamVisitorID, &result.GoalsLocal, &result.GoalsVisitor, &result.ChampionshipID, &result.StageID, &result.GroupSID, &result.StageName, &result.GroupName)
 		if err != nil {
 			utils.ErrorLogger.Println("Error scanning result: ", err)
 			return nil, fmt.Errorf("error scanning result: %v", err)
@@ -71,7 +104,23 @@ func (r *MatchService) GetAllPlayedMatchesByChampionshipID(championshipID int) (
 }
 
 func (r *MatchService) GetNotPlayedMatchesByChampionshipID(championshipID int) ([]models.Match, error) {
-	query := "SELECT * FROM GameMatch WHERE championship_id = ? AND match_date > NOW() + INTERVAL (SELECT hours_until_match FROM Utils) HOUR ORDER BY match_date ASC"
+	query := `
+	SELECT 
+		GameMatch.*, 
+		Stages.stage_name, 
+		GroupStages.group_s_name 
+	FROM 
+		GameMatch 
+	LEFT JOIN 
+		Stages ON GameMatch.stage_id = Stages.stage_id
+	LEFT JOIN 
+		GroupStages ON GameMatch.group_s_id = GroupStages.group_s_id
+	WHERE 
+		GameMatch.championship_id = ? 
+		AND match_date > NOW() + INTERVAL (SELECT hours_until_match FROM Utils) HOUR 
+	ORDER BY 
+		match_date ASC`
+
 	rows, err := database.QueryRowsDBParams(query, championshipID)
 	if err != nil {
 		utils.ErrorLogger.Println("Error getting matches to play: ", err)
@@ -82,7 +131,7 @@ func (r *MatchService) GetNotPlayedMatchesByChampionshipID(championshipID int) (
 	var matches []models.Match
 	for rows.Next() {
 		var match models.Match
-		err = rows.Scan(&match.MatchID, &match.MatchDate, &match.TeamLocalID, &match.TeamVisitorID, &match.GoalsLocal, &match.GoalsVisitor, &match.ChampionshipID, &match.StageID, &match.GroupSID)
+		err = rows.Scan(&match.MatchID, &match.MatchDate, &match.TeamLocalID, &match.TeamVisitorID, &match.GoalsLocal, &match.GoalsVisitor, &match.ChampionshipID, &match.StageID, &match.GroupSID, &match.StageName, &match.GroupName)
 		if err != nil {
 			utils.ErrorLogger.Println("Error scanning match: ", err)
 			return nil, fmt.Errorf("error scanning match: %v", err)
@@ -92,16 +141,30 @@ func (r *MatchService) GetNotPlayedMatchesByChampionshipID(championshipID int) (
 	return matches, nil
 }
 
+// Actualiza la consulta de GetMatchResult
 func (r *MatchService) GetMatchResult(matchID int) (models.Match, error) {
 	var result models.Match
 
-	query := "SELECT * FROM GameMatch WHERE match_id = ?"
+	query := `
+	SELECT 
+		GameMatch.*, 
+		Stages.stage_name, 
+		GroupStages.group_s_name 
+	FROM 
+		GameMatch 
+	JOIN 
+		Stages ON GameMatch.stage_id = Stages.stage_id
+	JOIN 
+		GroupStages ON GameMatch.group_s_id = GroupStages.group_s_id
+	WHERE 
+		GameMatch.match_id = ?`
+		
 	row, err := database.QueryRowDB(query, matchID)
 	if err != nil {
 		utils.ErrorLogger.Println("Error getting result: ", err)
 		return models.Match{}, fmt.Errorf("error getting result: %v", err)
 	}
-	err = row.Scan(&result.MatchID, &result.MatchDate, &result.TeamLocalID, &result.TeamVisitorID, &result.GoalsLocal, &result.GoalsVisitor, &result.ChampionshipID, &result.StageID, &result.GroupSID)
+	err = row.Scan(&result.MatchID, &result.MatchDate, &result.TeamLocalID, &result.TeamVisitorID, &result.GoalsLocal, &result.GoalsVisitor, &result.ChampionshipID, &result.StageID, &result.GroupSID, &result.StageName, &result.GroupName)
 	if err == sql.ErrNoRows {
 		return models.Match{}, fmt.Errorf("no match found for match_id: %d", matchID)
 	} else if err != nil {

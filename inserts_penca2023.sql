@@ -82,30 +82,50 @@ INSERT INTO Teams_Championships (team_id, championship_id, group_s_id) VALUES
 
 -- Inserción de Partidos de la fase de grupos de la Copa América 2023
 INSERT INTO GameMatch (match_date, team_local_id, team_visitor_id, goals_local, goals_visitor, championship_id, stage_id, group_s_id) VALUES
-('2023-06-20 19:00:00', 1, 11, NULL, NULL, 1, 1, 1), -- Argentina vs Canada
-('2023-06-21 19:00:00', 8, 4, NULL, NULL, 1, 1, 1), -- Peru vs Chile
-('2023-06-22 17:00:00', 6, 10, NULL, NULL, 1, 1, 2), -- Ecuador vs Venezuela
-('2023-06-22 20:00:00', 15, 14, NULL, NULL, 1, 1, 2), -- Mexico vs Jamaica
-('2023-06-23 17:00:00', 13, 2, NULL, NULL, 1, 1, 3), -- United States vs Bolivia
-('2023-06-23 20:00:00', 9, 16, NULL, NULL, 1, 1, 3), -- Uruguay vs Panama
-('2023-06-24 17:00:00', 5, 7, NULL, NULL, 1, 1, 4), -- Colombia vs Paraguay
-('2023-06-24 18:00:00', 3, 12, NULL, NULL, 1, 1, 4), -- Brazil vs Costa Rica
-('2023-06-25 17:00:00', 8, 11, NULL, NULL, 1, 1, 1), -- Peru vs Canada
-('2023-06-25 20:00:00', 4, 1, NULL, NULL, 1, 1, 1), -- Chile vs Argentina
-('2023-06-26 17:00:00', 6, 14, NULL, NULL, 1, 1, 2), -- Ecuador vs Jamaica
-('2023-06-26 20:00:00', 10, 15, NULL, NULL, 1, 1, 2), -- Venezuela vs Mexico
-('2023-06-27 17:00:00', 16, 13, NULL, NULL, 1, 1, 3), -- Panama vs United States
-('2023-06-27 20:00:00', 2, 9, NULL, NULL, 1, 1, 3), -- Bolivia vs Uruguay
-('2023-06-28 17:00:00', 7, 3, NULL, NULL, 1, 1, 4), -- Paraguay vs Brazil
-('2023-06-28 20:00:00', 12, 5, NULL, NULL, 1, 1, 4), -- Costa Rica vs Colombia
-('2023-06-29 19:00:00', 1, 8, NULL, NULL, 1, 1, 1), -- Argentina vs Peru
-('2023-06-29 19:00:00', 11, 4, NULL, NULL, 1, 1, 1), -- Canada vs Chile
-('2023-06-30 19:00:00', 14, 10, NULL, NULL, 1, 1, 2), -- Jamaica vs Venezuela
-('2023-06-30 19:00:00', 15, 6, NULL, NULL, 1, 1, 2), -- Mexico vs Ecuador
-('2023-07-01 20:00:00', 2, 16, NULL, NULL, 1, 1, 3), -- Bolivia vs Panama
-('2023-07-01 20:00:00', 13, 9, NULL, NULL, 1, 1, 3), -- United States vs Uruguay
-('2023-07-02 20:00:00', 12, 7, NULL, NULL, 1, 1, 4), -- Costa Rica vs Paraguay
-('2023-07-02 20:00:00', 3, 5, NULL, NULL, 1, 1, 4); -- Brazil vs Colombia
+('2023-06-20 19:00:00', 1, 11, 2, 0, 1, 1, 1), -- Argentina vs Canada
+('2023-06-21 19:00:00', 8, 4, 1, 1, 1, 1, 1), -- Peru vs Chile
+('2023-06-22 17:00:00', 6, 10, 3, 2, 1, 1, 2), -- Ecuador vs Venezuela
+('2023-06-22 20:00:00', 15, 14, 0, 0, 1, 1, 2), -- Mexico vs Jamaica
+('2023-06-23 17:00:00', 13, 2, 1, 0, 1, 1, 3), -- United States vs Bolivia
+('2023-06-23 20:00:00', 9, 16, 2, 1, 1, 1, 3), -- Uruguay vs Panama
+('2023-06-24 17:00:00', 5, 7, 0, 0, 1, 1, 4), -- Colombia vs Paraguay
+('2023-06-24 18:00:00', 3, 12, 3, 1, 1, 1, 4), -- Brazil vs Costa Rica
+('2023-06-25 17:00:00', 8, 11, 1, 2, 1, 1, 1), -- Peru vs Canada
+('2023-06-25 20:00:00', 4, 1, 2, 2, 1, 1, 1), -- Chile vs Argentina
+('2023-06-26 17:00:00', 6, 14, 1, 0, 1, 1, 2), -- Ecuador vs Jamaica
+('2023-06-26 20:00:00', 10, 15, 2, 1, 1, 1, 2), -- Venezuela vs Mexico
+('2023-06-27 17:00:00', 16, 13, 0, 1, 1, 1, 3), -- Panama vs United States
+('2023-06-27 20:00:00', 2, 9, 3, 3, 1, 1, 3), -- Bolivia vs Uruguay
+('2023-06-28 17:00:00', 7, 3, 1, 2, 1, 1, 4), -- Paraguay vs Brazil
+('2023-06-28 20:00:00', 12, 5, 0, 0, 1, 1, 4), -- Costa Rica vs Colombia
+('2023-06-29 19:00:00', 1, 8, 1, 3, 1, 1, 1), -- Argentina vs Peru
+('2023-06-29 19:00:00', 11, 4, 2, 2, 1, 1, 1), -- Canada vs Chile
+('2023-06-30 19:00:00', 14, 10, 0, 1, 1, 1, 2), -- Jamaica vs Venezuela
+('2023-06-30 19:00:00', 15, 6, 1, 1, 1, 1, 2), -- Mexico vs Ecuador
+('2023-07-01 20:00:00', 2, 16, 2, 0, 1, 1, 3), -- Bolivia vs Panama
+('2023-07-01 20:00:00', 13, 9, 0, 1, 1, 1, 3), -- United States vs Uruguay
+('2023-07-02 20:00:00', 12, 7, 1, 3, 1, 1, 4), -- Costa Rica vs Paraguay
+('2023-07-02 20:00:00', 3, 5, 2, 1, 1, 1, 4); -- Brazil vs Colombia
+
+
+-- Partidos de cuartos de final
+INSERT INTO GameMatch (match_date, team_local_id, team_visitor_id, goals_local, goals_visitor, championship_id, stage_id, group_s_id) VALUES
+('2023-07-05 17:00:00', 1, 14, 3, 1, 1, 2, NULL), -- Argentina vs Jamaica
+('2023-07-05 20:00:00', 15, 11, 2, 1, 1, 2, NULL), -- Mexico vs Canada
+('2023-07-06 17:00:00', 9, 5, 2, 1, 1, 2, NULL), -- Uruguay vs Colombia
+('2023-07-06 20:00:00', 3, 13, 2, 0, 1, 2, NULL); -- Brazil vs United States
+
+-- Partidos de semifinales
+INSERT INTO GameMatch (match_date, team_local_id, team_visitor_id, goals_local, goals_visitor, championship_id, stage_id, group_s_id) VALUES
+('2023-07-09 17:00:00', 1, 9, 1, 2, 1, 3, NULL), -- Argentina vs Uruguay
+('2023-07-09 20:00:00', 15, 3, 1, 2, 1, 3, NULL); -- Mexico vs Brazil
+
+
+-- Final
+INSERT INTO GameMatch (match_date, team_local_id, team_visitor_id, goals_local, goals_visitor, championship_id, stage_id, group_s_id) VALUES
+('2023-07-12 17:00:00', 9, 3, 2, 1, 1, 4, NULL); -- Uruguay vs Brazil
+
+
 
 -- Inserción de predicciones de partidos
 INSERT INTO Predictions (goals_local, goals_visitor, document_id, match_id) VALUES

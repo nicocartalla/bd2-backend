@@ -50,29 +50,6 @@ CREATE TABLE Championships (
     FOREIGN KEY (subchampion) REFERENCES Teams(team_id)
 );
 
-/* 
--- Creación de la tabla ChampionshipGroups
--- Grupos asociados a un campeonato, por ejemplo, Grupo de Amigos, Grupo de la Facultad, etc
-CREATE TABLE ChampionshipGroups (
-    group_id INT PRIMARY KEY AUTO_INCREMENT,
-    name VARCHAR(50) NOT NULL,
-    championship_id INT,
-    referredCode VARCHAR(20),
-    FOREIGN KEY (championship_id) REFERENCES Championships(championship_id)
-);
-
--- Creación de la tabla User_ChampionshipGroups
-CREATE TABLE User_ChampionshipGroups (
-    document_id VARCHAR(10),
-    group_id INT,
-    champion INT,
-    subchampion INT,
-    PRIMARY KEY (document_id, group_id),
-    FOREIGN KEY (document_id) REFERENCES User(document_id),
-    FOREIGN KEY (champion) REFERENCES Teams(team_id),
-    FOREIGN KEY (subchampion) REFERENCES Teams(team_id)
-    FOREIGN KEY (group_id) REFERENCES ChampionshipGroups(group_id)
-); */
 
 -- Creación de la tabla GameMatch
 CREATE TABLE GameMatch (

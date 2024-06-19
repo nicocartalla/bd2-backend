@@ -92,15 +92,6 @@ CREATE TABLE GameMatch (
     FOREIGN KEY (group_s_id) REFERENCES GroupStages(group_s_id)
 );
 
--- Creación de la tabla User_Championship - Relación muchos a muchos entre usuarios y campeonatos
-CREATE TABLE User_Championship (
-    document_id VARCHAR(10),
-    championship_id INT,
-    PRIMARY KEY (document_id, championship_id),
-    FOREIGN KEY (document_id) REFERENCES User(document_id),
-    FOREIGN KEY (championship_id) REFERENCES Championships(championship_id)
-);
-
 CREATE TABLE Predictions (
     prediction_id INT PRIMARY KEY AUTO_INCREMENT, 
     goals_local INT NOT NULL, 
@@ -171,6 +162,17 @@ CREATE TABLE Utils (
     correct_result_match_points INT,
     champion_points INT,
     sub_champion_points INT
+);
+
+CREATE TABLE Notifications (
+    notification_id INT PRIMARY KEY AUTO_INCREMENT,
+    document_id VARCHAR(10),
+    match_id INT,
+    notification_time DATETIME NOT NULL,
+    notification_method VARCHAR(50) NOT NULL,
+    FOREIGN KEY (document_id) REFERENCES User(document_id),
+    FOREIGN KEY (match_id) REFERENCES GameMatch(match_id),
+    UNIQUE (document_id, match_id, notification_method)
 );
 
 -- Inserción de valores en Utils
@@ -300,6 +302,8 @@ INSERT INTO GameMatch (match_date, team_local_id, team_visitor_id, goals_local, 
 ('2024-07-13 19:00:00', NULL, NULL, NULL, NULL, 1, 4), -- Tercer Puesto
 ('2024-07-14 19:00:00', NULL, NULL, NULL, NULL, 1, 4); -- Final
  */
+
+CREATE TABLE UserNotifications
 
 
 SET FOREIGN_KEY_CHECKS = 1;

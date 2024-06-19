@@ -141,6 +141,17 @@ CREATE TABLE Utils (
     sub_champion_points INT
 );
 
+CREATE TABLE Notifications (
+    notification_id INT PRIMARY KEY AUTO_INCREMENT,
+    document_id VARCHAR(10),
+    match_id INT,
+    notification_time DATETIME NOT NULL,
+    notification_method VARCHAR(50) NOT NULL,
+    FOREIGN KEY (document_id) REFERENCES User(document_id),
+    FOREIGN KEY (match_id) REFERENCES GameMatch(match_id),
+    UNIQUE (document_id, match_id, notification_method)
+);
+
 -- Inserción de valores en Utils
 INSERT INTO Utils (hours_until_match, exact_match_points, correct_result_match_points, champion_points, sub_champion_points) VALUES
 (1, 4, 2, 10, 5);
@@ -268,6 +279,8 @@ INSERT INTO GameMatch (match_date, team_local_id, team_visitor_id, goals_local, 
 ('2024-07-13 19:00:00', NULL, NULL, NULL, NULL, 1, 4), -- Tercer Puesto
 ('2024-07-14 19:00:00', NULL, NULL, NULL, NULL, 1, 4); -- Final
  */
+
+CREATE TABLE UserNotifications
 
 
 SET FOREIGN_KEY_CHECKS = 1;

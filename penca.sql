@@ -135,6 +135,7 @@ CREATE TABLE Teams_Championships (
 -- Creación de la tabla Utils
 CREATE TABLE Utils (
     hours_until_match INT,
+    hours_match_duration INT,
     exact_match_points INT,
     correct_result_match_points INT,
     champion_points INT,
@@ -153,8 +154,8 @@ CREATE TABLE Notifications (
 );
 
 -- Inserción de valores en Utils
-INSERT INTO Utils (hours_until_match, exact_match_points, correct_result_match_points, champion_points, sub_champion_points) VALUES
-(1, 4, 2, 10, 5);
+INSERT INTO Utils (hours_until_match, hours_match_duration, exact_match_points, correct_result_match_points, champion_points, sub_champion_points) VALUES
+(1, 2, 4, 2, 10, 5);
 
 -- Inserción de Roles de Usuario
 INSERT INTO UserRoles (role_name, description) VALUES

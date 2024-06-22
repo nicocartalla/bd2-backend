@@ -77,11 +77,9 @@ func (r *MatchService) GetAllPlayedMatchesByChampionshipID(championshipID int) (
 		GroupStages ON GameMatch.group_s_id = GroupStages.group_s_id
 	WHERE 
 		GameMatch.championship_id = ?
-		AND GameMatch.goals_local IS NOT NULL 
-		AND GameMatch.goals_visitor IS NOT NULL
+		AND match_date < NOW() - INTERVAL (SELECT hours_match_duration FROM Utils) HOUR
 	ORDER BY 
-		GameMatch.match_date ASC;
-`
+		GameMatch.match_date ASC`
 
 	rows, err := database.QueryRowsDBParams(query, championshipID)
 	if err != nil {
@@ -103,6 +101,45 @@ func (r *MatchService) GetAllPlayedMatchesByChampionshipID(championshipID int) (
 	return results, nil
 }
 
+//Get Matchs in progress
+func (r *MatchService) GetMatchesInProgressByChampionshipID(championshipID int) ([]models.Match, error) {
+	query := `
+	SELECT
+		GameMatch.*,
+		Stages.stage_name,
+		GroupStages.group_s_name
+	FROM
+		GameMatch
+	LEFT JOIN
+		Stages ON GameMatch.stage_id = Stages.stage_id
+	LEFT JOIN
+		GroupStages ON GameMatch.group_s_id = GroupStages.group_s_id
+	WHERE
+		GameMatch.championship_id = ?
+	AND match_date BETWEEN NOW() - INTERVAL 2 HOUR AND NOW()
+	ORDER BY
+		GameMatch.match_date ASC`
+	rows, err := database.QueryRowsDBParams(query, championshipID)
+	if err != nil {
+		utils.ErrorLogger.Println("Error getting matches in progress: ", err)
+		return nil, fmt.Errorf("error getting matches in progess: %v", err)
+	}
+	defer rows.Close()
+
+	var matches []models.Match
+	for rows.Next() {
+		var match models.Match
+		err = rows.Scan(&match.MatchID, &match.MatchDate, &match.TeamLocalID, &match.TeamVisitorID, &match.GoalsLocal, &match.GoalsVisitor, &match.ChampionshipID, &match.StageID, &match.GroupSID, &match.StageName, &match.GroupName)
+		if err != nil {
+			utils.ErrorLogger.Println("Error scanning match: ", err)
+			return nil, fmt.Errorf("error scanning match: %v", err)
+		}
+		matches = append(matches, match)
+	}
+	return matches, nil
+}
+	
+
 func (r *MatchService) GetNotPlayedMatchesByChampionshipID(championshipID int) ([]models.Match, error) {
 	query := `
 	SELECT 
@@ -117,7 +154,7 @@ func (r *MatchService) GetNotPlayedMatchesByChampionshipID(championshipID int) (
 		GroupStages ON GameMatch.group_s_id = GroupStages.group_s_id
 	WHERE 
 		GameMatch.championship_id = ? 
-		AND match_date > NOW() + INTERVAL (SELECT hours_until_match FROM Utils) HOUR 
+		AND match_date > NOW()
 	ORDER BY 
 		match_date ASC`
 
@@ -144,7 +181,6 @@ func (r *MatchService) GetNotPlayedMatchesByChampionshipID(championshipID int) (
 // Actualiza la consulta de GetMatchResult
 func (r *MatchService) GetMatchResult(matchID int) (models.Match, error) {
 	var result models.Match
-
 	query := `
 	SELECT 
 		GameMatch.*, 

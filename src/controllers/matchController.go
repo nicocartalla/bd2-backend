@@ -102,6 +102,30 @@ func GetAllPlayedMatchesByChampionshipID(w http.ResponseWriter, r *http.Request)
 	json.NewEncoder(w).Encode(teams)
 }
 
+//get matches in progress
+func GetMatchesInProgressByChampionshipID(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	championship_id, err := strconv.Atoi(vars["championship_id"])
+	if err != nil {
+		utils.RespondWithError(w, http.StatusBadRequest, "Invalid championship_id", err)
+		return
+	}
+	if ok, err := championshipService.ValidateChampionship(championship_id); err != nil || !ok {
+		utils.ErrorLogger.Printf("Error validating championship: %d: %v", championship_id, err)
+		utils.RespondWithError(w, http.StatusBadRequest, "Invalid championship_id", err)
+		return
+	}
+
+	teams, err := matchService.GetMatchesInProgressByChampionshipID(championship_id)
+	if err != nil {
+		utils.RespondWithError(w, http.StatusInternalServerError, "Error al obtener los equipos", err)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(teams)
+}
+
 func GetNotPlayedMatchesByChampionshipID(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	championship_id, err := strconv.Atoi(vars["championship_id"])

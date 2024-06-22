@@ -30,6 +30,15 @@ func getNotPlayedMatchesByChampionshipID(r *mux.Router) *mux.Router {
 	return a
 }
 
+//get matches in progress by championship id
+func getMatchesInProgressByChampionshipID(r *mux.Router) *mux.Router {
+	a := r.PathPrefix("/inprogress").Subrouter()
+	a.Use(mux.CORSMethodMiddleware(a))
+	a.HandleFunc("/{championship_id}", controllers.GetMatchesInProgressByChampionshipID).Methods("GET")
+	a.MethodNotAllowedHandler = http.HandlerFunc(MethodNotAllowed)
+	return a
+}
+
 func getMatchResultByMatchId(r *mux.Router) *mux.Router {
 	a := r.PathPrefix("/played/id").Subrouter()
 	a.Use(mux.CORSMethodMiddleware(a))
@@ -74,6 +83,7 @@ func MatchRouter(r *mux.Router) {
 	getAllMatchesByChampionshipID(r)
 	getAllPlayedMatchesByChampionshipID(r)
 	getNotPlayedMatchesByChampionshipID(r)
+	getMatchesInProgressByChampionshipID(r)
 	getMatchResultByMatchId(r)
 	insertMatch(r)
 	updateMatch(r)

@@ -102,7 +102,6 @@ func GetAllPlayedMatchesByChampionshipID(w http.ResponseWriter, r *http.Request)
 	json.NewEncoder(w).Encode(teams)
 }
 
-//get matches in progress
 func GetMatchesInProgressByChampionshipID(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	championship_id, err := strconv.Atoi(vars["championship_id"])

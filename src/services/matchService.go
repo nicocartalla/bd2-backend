@@ -101,7 +101,6 @@ func (r *MatchService) GetAllPlayedMatchesByChampionshipID(championshipID int) (
 	return results, nil
 }
 
-//Get Matchs in progress
 func (r *MatchService) GetMatchesInProgressByChampionshipID(championshipID int) ([]models.Match, error) {
 	query := `
 	SELECT

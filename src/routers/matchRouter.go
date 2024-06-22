@@ -30,7 +30,6 @@ func getNotPlayedMatchesByChampionshipID(r *mux.Router) *mux.Router {
 	return a
 }
 
-//get matches in progress by championship id
 func getMatchesInProgressByChampionshipID(r *mux.Router) *mux.Router {
 	a := r.PathPrefix("/inprogress").Subrouter()
 	a.Use(mux.CORSMethodMiddleware(a))

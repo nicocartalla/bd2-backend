@@ -13,19 +13,35 @@ func (s *UtilsService) GetPoints() (models.Utils, error) {
 	var utilsData models.Utils
 	query := "SELECT exact_match_points, correct_result_match_points, champion_points, sub_champion_points FROM Utils LIMIT 1"
 	row, err := database.QueryDB(query)
-	row.Scan(&utilsData.ExactMatchPoints, &utilsData.CorrectResultMatchPoints, &utilsData.ChampionPoints, &utilsData.SubChampionPoints)
 	if err != nil {
-		utils.ErrorLogger.Println("Error getting points from Utils: ", err)
-		return utilsData, fmt.Errorf("error getting points from Utils: %v", err)
+		utils.ErrorLogger.Println("Error querying database: ", err)
+		return utilsData, fmt.Errorf("error querying database: %v", err)
 	}
+	defer row.Close()
+
+	if row.Next() {
+		err = row.Scan(&utilsData.ExactMatchPoints, &utilsData.CorrectResultMatchPoints, &utilsData.ChampionPoints, &utilsData.SubChampionPoints)
+		if err != nil {
+			utils.ErrorLogger.Println("Error scanning row: ", err)
+			return utilsData, fmt.Errorf("error scanning row: %v", err)
+		}
+	} else {
+		utils.ErrorLogger.Println("No rows found")
+		return utilsData, fmt.Errorf("no rows found")
+	}
+
+	utils.InfoLogger.Println("Got points from Utils: ", utilsData)
 	return utilsData, nil
 }
 
 func (s *UtilsService) GetPointsExactResult() (int, error) {
+	utils.InfoLogger.Println("Getting exact match points")
 	utilsData, err := s.GetPoints()
+	utils.InfoLogger.Println("Got exact match points: ", utilsData)
 	if err != nil {
 		return 0, err
 	}
+	utils.InfoLogger.Println("Exact match points: ", utilsData.ExactMatchPoints)
 	return utilsData.ExactMatchPoints, nil
 }
 

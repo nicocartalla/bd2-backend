@@ -16,6 +16,6 @@ ENV TZ=America/Montevideo
 RUN cp /usr/share/zoneinfo/America/Montevideo /etc/localtime
 
 COPY --from=builder /penca /app/bin/penca
-COPY ./src/app.env /app.env
+COPY docker.env /app.env
 EXPOSE 8080
 CMD [ "/app/bin/penca" ]

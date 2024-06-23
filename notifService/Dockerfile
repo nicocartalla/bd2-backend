@@ -4,9 +4,10 @@ WORKDIR /app
 ARG opts
 COPY go.mod ./
 COPY go.sum ./
+RUN go mod download
+
 COPY ./src ./src
 
-RUN go mod download
 RUN env ${opts} go build -o /notif ./src/main.go
 
 FROM alpine:latest

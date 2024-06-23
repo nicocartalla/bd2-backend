@@ -7,31 +7,20 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"path/filepath"
 	"text/template"
 	"time"
+	"bd2-backend/src/templates"
 )
 
 type NotificationService struct{}
 
 func SendEmailToUsersWhoHaveNotMadePredictions() error {
 
-	basePath, err := filepath.Abs(filepath.Dir("."))
+	tmpl, err := template.New("").Parse(templates.EmailInsertPrediction)
+ 
 	if err != nil {
-		utils.ErrorLogger.Println("Error getting base path", err)
-		return fmt.Errorf("error getting base path: %v", err)
-	}	
-
-	templatePath := fmt.Sprintf("%s/src/templates/email-insert-prediction.html", basePath)
-
-	// if err != nil {
-	// 	utils.ErrorLogger.Println("Error render email template", err)
-	// 	return fmt.Errorf("error render email template: %v", err)
-	// }
-
-	tmpl, err := template.ParseFiles(templatePath)
-	if err != nil {
-		tmpl, _ = template.ParseFiles(fmt.Sprintf("%s/templates/email-insert-prediction.html", basePath))
+		utils.ErrorLogger.Println("Error parsing template", err)
+		return fmt.Errorf("error parsing template: %v", err)
 	}
 	usersTemplate, err := getUsersWhoHaveNotMadePredictions(8)
 	if err != nil {

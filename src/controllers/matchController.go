@@ -282,6 +282,13 @@ func DeleteMatch(w http.ResponseWriter, r *http.Request) {
 		utils.RespondWithError(w, http.StatusBadRequest, "Invalid request body", err)
 		return
 	}
+	id_pred, err := matchService.DeletePredictions(request.MatchID)
+	if err != nil {
+		utils.RespondWithError(w, http.StatusInternalServerError, "Error deleting predictions", err)
+		return
+	}
+	utils.InfoLogger.Println("Predictions for match deleted successfully with id: ", id_pred)
+
 	id, err := matchService.DeleteMatch(request.MatchID)
 	if err != nil {
 		utils.RespondWithError(w, http.StatusInternalServerError, "Error deleting match", err)

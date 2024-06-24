@@ -206,10 +206,20 @@ func (r *MatchService) UpdateMatch(match models.Match) (int64, error) {
 	}
 	return int64(match.MatchID), nil
 }
+// delete predictions for a match
+func (r *MatchService) DeletePredictions(matchID int) (int64, error) {
+	query := fmt.Sprintf("DELETE FROM Predictions WHERE match_id = %d", matchID)
+	id, err := database.DeleteDB(query)
+	if err != nil {
+		utils.ErrorLogger.Println("Error deleting predictions: ", err)
+		return 0, fmt.Errorf("error deleting predictions: %v , %d", err, id)
+	}
+	return int64(matchID), nil
+}
 
 func (r *MatchService) DeleteMatch(matchID int) (int64, error) {
 	query := fmt.Sprintf("DELETE FROM GameMatch WHERE match_id = %d", matchID)
-	id, err := database.InsertDB(query)
+	id, err := database.DeleteDB(query)
 	if err != nil {
 		utils.ErrorLogger.Println("Error deleting match: ", err)
 		return 0, fmt.Errorf("error deleting match: %v , %d", err, id)

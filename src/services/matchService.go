@@ -214,8 +214,6 @@ func (r *MatchService) GetMatchResult(matchID int) (models.Match, error) {
 
 func (r *MatchService) InsertMatch(match models.Match) (int64, error) {
 	query := "INSERT INTO GameMatch (match_date, team_local_id, team_visitor_id, championship_id, stage_id, group_s_id) VALUES ( ?, ?, ?, ?, ?, ?)"
-	// Print all parameters
-	utils.InfoLogger.Println("Inserting match with parameters: ", match.MatchDate, match.TeamLocalID, match.TeamVisitorID, match.ChampionshipID, match.StageID, match.GroupSID)
 	result, err := database.InsertDBParams(query, match.MatchDate, match.TeamLocalID, match.TeamVisitorID, match.ChampionshipID, match.StageID, match.GroupSID)
 	if err != nil {
 		utils.ErrorLogger.Println("Error inserting match: ", err)
@@ -225,12 +223,18 @@ func (r *MatchService) InsertMatch(match models.Match) (int64, error) {
 }
 
 func (r *MatchService) UpdateMatch(match models.Match) (int64, error) {
+	var groupSID *int
+	if match.GroupSID == nil || *match.GroupSID == 0 {
+		groupSID = nil
+	} else {
+		groupSID = match.GroupSID
+	}
 	query := `
         UPDATE GameMatch
         SET match_date = ?, team_local_id = ?, team_visitor_id = ?, championship_id = ?, stage_id = ?, group_s_id = ?, goals_local = ?, goals_visitor = ?
         WHERE match_id = ?`
 
-	result, err := database.UpdateDBParams(query, match.MatchDate, match.TeamLocalID, match.TeamVisitorID, match.ChampionshipID, match.StageID, match.GroupSID, match.GoalsLocal, match.GoalsVisitor, match.MatchID)
+	result, err := database.UpdateDBParams(query, match.MatchDate, match.TeamLocalID, match.TeamVisitorID, match.ChampionshipID, match.StageID, groupSID, match.GoalsLocal, match.GoalsVisitor, match.MatchID)
 	if err != nil {
 		utils.ErrorLogger.Println("Error updating match: ", err)
 		return 0, fmt.Errorf("error updating match: %d , %v", result, err)
